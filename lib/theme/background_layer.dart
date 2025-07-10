@@ -5,12 +5,21 @@ import 'package:sorteos_app/theme/theme.dart';
 class BackgroundLayer extends StatelessWidget {
   const BackgroundLayer({
     super.key,
+    this.drawer,
+    this.bottomNavigationBar,
     this.child,
     this.floatingActionButton,
     this.appBar,
     this.floatingActionButtonLocation,
     this.extendBodyBehindAppBar = false,
   });
+
+  /// Nuevo: cajón de navegación
+  final Widget? drawer;
+
+  /// Nuevo: barra inferior de navegación
+  final Widget? bottomNavigationBar;
+
   final Widget? child;
   final Widget? floatingActionButton;
   final PreferredSizeWidget? appBar;
@@ -20,10 +29,12 @@ class BackgroundLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: extendBodyBehindAppBar,
-      backgroundColor: MaterialTheme.otherColor2,
+      backgroundColor: MaterialTheme.greenColor,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
       appBar: appBar,
+      drawer: drawer,
+      bottomNavigationBar: bottomNavigationBar,
       body: Stack(
         clipBehavior: Clip.none,
 

@@ -1,9 +1,8 @@
-// lib/widgets/raffles_tabs.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sorteos_app/screens/loading_screen.dart';
+import 'package:sorteos_app/theme/theme.dart';
 import 'package:sorteos_app/widgets/raffle_card.dart';
 
 import '../models/raffle.dart';
@@ -14,10 +13,12 @@ class RafflesTabs extends ConsumerStatefulWidget {
     super.key,
     required this.userId,
     required this.tabController,
+    required this.onTabsVisibility,
   });
 
   final String userId;
-  final TabController tabController;
+  final TabController? tabController;
+  final void Function(List<bool>) onTabsVisibility;
 
   @override
   ConsumerState<RafflesTabs> createState() => _RafflesTabsState();
@@ -25,10 +26,10 @@ class RafflesTabs extends ConsumerStatefulWidget {
 
 class _RafflesTabsState extends ConsumerState<RafflesTabs> {
   late final ProviderSubscription<AsyncValue<List<Raffle>>> _sub;
+
   @override
   void initState() {
     super.initState();
-    // Escuchamos manualmente el estado de rafflesProvider
     _sub = ref.listenManual<AsyncValue<List<Raffle>>>(rafflesProvider, (
       prev,
       next,
@@ -36,7 +37,7 @@ class _RafflesTabsState extends ConsumerState<RafflesTabs> {
       if (next.isLoading) {
         LoadingScreen.show(
           context,
-          message: 'Cargando tu rifas',
+          message: 'Cargando tus rifas',
           logo: Image.asset('assets/images/logo_white.png'),
         );
       } else {
@@ -64,17 +65,63 @@ class _RafflesTabsState extends ConsumerState<RafflesTabs> {
           return isOpen && (!excludeParticipation || !participated);
         } else if (status == 'closed') {
           return !isOpen;
-        } else /* mis rifas */ {
+        } else {
           return participated;
         }
       }).toList();
     }
 
-    Widget _buildList(List<Raffle> list) {
-      if (list.isEmpty) {
-        return Center(child: Text('Nuevas rifas proximamente...'));
-      }
-      return ListView.builder(
+    final open = _filter('open', true);
+    final closed = _filter('closed', false);
+    final mine = _filter('', false);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onTabsVisibility([
+        open.isNotEmpty,
+        closed.isNotEmpty,
+        mine.isNotEmpty,
+      ]);
+    });
+
+    final tabsContent = <Widget>[];
+    if (open.isNotEmpty) tabsContent.add(_buildList(open));
+    if (closed.isNotEmpty) tabsContent.add(_buildList(closed));
+    if (mine.isNotEmpty) tabsContent.add(_buildList(mine));
+
+    return rafflesAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (e, _) => Center(child: Text('Error: $e')),
+      data:
+          (_) => Theme(
+            data: Theme.of(context).copyWith(
+              tabBarTheme: const TabBarTheme(
+                indicator: UnderlineTabIndicator(
+                  borderSide: BorderSide(color: Colors.white, width: 2),
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+              ),
+            ),
+            child: TabBarView(
+              controller: widget.tabController,
+              children: tabsContent,
+            ),
+          ),
+    );
+  }
+
+  Widget _buildList(List<Raffle> list) {
+    if (list.isEmpty) {
+      return const Center(
+        child: Text(
+          'Nuevas rifas próximamente...',
+          style: TextStyle(color: Colors.white),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: ListView.builder(
         itemCount: list.length,
         itemBuilder: (ctx, i) {
           final r = list[i];
@@ -90,31 +137,7 @@ class _RafflesTabsState extends ConsumerState<RafflesTabs> {
             },
           );
         },
-      );
-    }
-
-    return rafflesAsync.when(
-      loading: () => const SizedBox.shrink(),
-      error: (e, _) => Center(child: Text('Error: $e')),
-      data:
-          (_) => Card(
-            margin: const EdgeInsets.only(top: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(32),
-              ),
-            ),
-            color: Colors.white,
-            child: TabBarView(
-              controller: widget.tabController,
-              children: [
-                _buildList(_filter('open', true)), // disponibles
-                _buildList(_filter('closed', false)), // finalizadas
-                _buildList(_filter('', false)), // mis rifas
-              ],
-            ),
-          ),
+      ),
     );
   }
 }

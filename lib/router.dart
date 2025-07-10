@@ -1,46 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sorteos_app/screens/home_screen.dart';
-import 'package:sorteos_app/screens/payment_screen.dart';
-import 'package:sorteos_app/screens/profile_screen.dart';
-import 'package:sorteos_app/screens/raffle_detail_screen.dart';
+import 'package:sorteos_app/screens/favorites_screen.dart';
+import 'package:sorteos_app/screens/main_scaffold.dart';
+import 'package:sorteos_app/screens/payment/confirm_transfer_screen.dart';
+import 'package:sorteos_app/screens/shop_screen.dart';
+
+import 'screens/profile_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/raffle_detail_screen.dart';
+import 'screens/payment_screen.dart';
 
 final router = GoRouter(
+  initialLocation: '/app/home',
   routes: [
-    GoRoute(
-      path: '/profile',
-      name: 'profile',
-      builder: (_, __) => const ProfileScreen(),
+    /// ShellRoute para el scaffold que incluye Drawer + BottomBar
+    ShellRoute(
+      builder: (context, state, child) => MainScaffold(child: child),
+      routes: [
+        /// Home
+        GoRoute(
+          path: '/app/home',
+          name: 'home',
+          builder: (_, __) => const HomeScreen(),
+          routes: [
+            GoRoute(
+              path: 'raffle/:id',
+              name: 'raffleDetail',
+              builder: (context, state) {
+                return RaffleDetailScreen(
+                  raffleId: state.pathParameters['id']!,
+                  name: state.extra as String? ?? '',
+                );
+              },
+            ),
+          ],
+        ),
+
+        /// Favoritos
+        GoRoute(
+          path: '/app/favorites',
+          name: 'favorites',
+          builder: (_, __) => const FavoritesScreen(),
+        ),
+
+        /// Tienda
+        GoRoute(
+          path: '/app/shop',
+          name: 'shop',
+          builder: (_, __) => const ShopScreen(),
+        ),
+
+        /// Perfil
+        GoRoute(
+          path: '/app/profile',
+          name: 'profile',
+          builder: (_, __) => const ProfileScreen(),
+        ),
+      ],
     ),
-    GoRoute(path: '/', name: 'home', builder: (_, __) => const HomeScreen()),
+
+    /// Rutas “flotantes” fuera del shell (sin BottomBar)
     GoRoute(
-      path: '/raffle/:id',
-      name: 'raffleDetail',
-      builder: (context, state) {
-        final id = state.pathParameters['id']!;
-        final name = state.extra as String;
-        return RaffleDetailScreen(raffleId: id, name: name);
-      },
-    ),
-    GoRoute(
-      path: '/recharge',
+      path: '/payment',
       name: 'recharge',
+      builder: (_, __) => const PaymentScreen(),
+    ),
+    GoRoute(
+      path: '/confirm',
+      name: 'confirmTransfer',
       builder: (context, state) {
-        return PaymentScreen();
+        final extra = state.extra as Map<String, dynamic>;
+        return ConfirmTransferScreen(
+          methodName: extra['methodName'],
+          svgAsset: extra['svg'],
+          account: extra['account'],
+          rate: extra['rate'],
+          fee: extra['fee'],
+          minAmount: extra['minAmount'],
+          amountUsd: extra['amountUsd'],
+        );
       },
     ),
   ],
-  redirect: (BuildContext context, GoRouterState state) async {
+
+  /// Guard global: redirigir a perfil si no hay userId
+  redirect: (context, state) async {
     final prefs = await SharedPreferences.getInstance();
     final hasUser = prefs.getString('userId') != null;
-    final loc = state.matchedLocation;
-
-    if (!hasUser && loc != '/profile') {
-      return '/profile';
+    final goingTo = state.matchedLocation;
+    if (!hasUser && !goingTo.startsWith('/app/profile')) {
+      return '/app/profile';
     }
-    if (hasUser && loc == '/profile') {
-      return '/';
+    if (hasUser && goingTo == '/app/profile') {
+      return '/app/home';
     }
     return null;
   },

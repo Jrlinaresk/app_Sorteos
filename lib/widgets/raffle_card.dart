@@ -18,8 +18,13 @@ class RaffleCard extends StatelessWidget {
 
     return Card(
       color: status.backgroundColor.withValues(alpha: .88),
-      margin: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.w),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(36)),
+      margin: EdgeInsets.only(top: 8.h, bottom: 8.h, left: 0.w, right: 16.w),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(36),
+          bottomRight: Radius.circular(36),
+        ),
+      ),
       elevation: 8.0,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),

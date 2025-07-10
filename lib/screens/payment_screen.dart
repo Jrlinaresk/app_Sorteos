@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sorteos_app/theme/theme.dart';
 import 'package:sorteos_app/validators/validators.dart';
 
@@ -24,6 +25,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   String _selecedMethodName = 'Bank CUP';
   bool _sending = false;
   String? _amountError;
+  String? _selectedSvg;
+  String _selectedMethodName = '';
 
   @override
   void initState() {
@@ -40,10 +43,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
   void _onMethodTap(
     String account,
+    String svg,
+    String methodName,
     double rate,
     double fee,
     double minAmount,
-    String methodName,
   ) {
     // al cambiar de método, actualizo también el error
     final text = _amountController.text.trim();
@@ -51,10 +55,12 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
     setState(() {
       _selectedAccount = account;
+      _selectedSvg = svg;
+      _selecedMethodName = methodName;
       _selectedRate = rate;
       _selectedFee = fee;
       _selectedMin = minAmount;
-      _selecedMethodName = methodName;
+      _amountError = null;
 
       // re-validar tras cambiar de método
       if (value != null && value < _selectedMin) {
@@ -87,10 +93,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       _sending = true;
     });
 
-    // Generar código aleatorio de 6 dígitos
-    final code = Random().nextInt(900000) + 100000;
-
-    await Future.delayed(const Duration(seconds: 1));
+    // Aquí recibes el operationId para guardarlo o mostrarlo.
 
     setState(() => _sending = false);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -130,7 +133,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         'methodName': 'Saldo Mobil',
         'svg': 'assets/svg/etecsa.svg',
         'account': '+5351979128',
-        'rate': 2.50,
+        'rate': 2.20,
         'fee': 3.0,
         'minAmount': 50.0,
       },
@@ -223,10 +226,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                     onTap:
                         () => _onMethodTap(
                           acct,
+                          m['svg'] as String,
+                          m['methodName'] as String,
                           m['rate'] as double,
                           m['fee'] as double,
                           m['minAmount'] as double,
-                          m['methodName'] as String,
                         ),
                   );
                 },
@@ -271,13 +275,26 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed:
-                    (_selectedAccount == null ||
-                            _sending ||
-                            amt == null ||
-                            amt <= 0)
-                        ? null
-                        : _sendConfirmationCode,
+                onPressed: () async {
+                  // …tu lógica de validación…
+                  final amount = double.parse(
+                    _amountController.text.replaceAll(',', '.'),
+                  );
+                  // notificar por local notification…
+                  // y ahora navegamos:
+                  await context.pushNamed(
+                    'confirmTransfer',
+                    extra: {
+                      'methodName': _selecedMethodName,
+                      'svg': _selectedSvg!,
+                      'account': _selectedAccount!,
+                      'rate': _selectedRate!,
+                      'fee': _selectedFee!,
+                      'minAmount': _selectedMin,
+                      'amountUsd': amount,
+                    },
+                  );
+                },
               ),
             ),
           ],

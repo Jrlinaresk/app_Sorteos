@@ -14,6 +14,7 @@ class MaterialTheme {
   static Color otherColor = Color.fromARGB(255, 251, 0, 188);
   static Color otherColor2 = Color.fromARGB(255, 224, 146, 2);
   static Color subtitle = Color.fromARGB(255, 236, 236, 236);
+  static Color transparent = Color.fromARGB(0, 0, 0, 0);
 
   const MaterialTheme(this.textTheme);
 
