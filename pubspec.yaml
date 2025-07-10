@@ -1,0 +1,91 @@
+name: sorteos_app
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+    # Paquete de localizaciones del SDK de Flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1          # Gestión de estado reactivo con Riverpod
+  go_router: ^15.1.1                # Navegación y enrutamiento declarativo
+  http: ^1.3.0                      # Cliente HTTP para llamadas a APIs REST
+  image_picker: ^1.1.2              # Permite seleccionar o capturar imágenes del dispositivo
+  intl: ^0.19.0                    # Internacionalización y formateo de fechas/números
+  pin_code_fields: ^8.0.1           # Widget de entrada para códigos PIN o OTP
+  record: ^6.0.0                    # Captura y grabación de audio desde el micrófono
+  permission_handler: ^12.0.0+1     # Solicitar y gestionar permisos en Android/iOS
+  path_provider: ^2.1.5             # Obtención de rutas de archivos en el sistema (temp, docs)
+  audioplayers: ^6.4.0              # Reproducción de archivos de audio y streams
+  firebase_core: ^3.13.0            # Inicializa el SDK de Firebase
+  firebase_auth: ^5.5.3             # Autenticación de usuarios con Firebase
+  firebase_ui_auth: ^1.16.1         # Componentes UI listos para Firebase Auth
+  cloud_firestore: ^5.6.7           # Base de datos NoSQL en tiempo real de Firebase
+  google_fonts: ^6.2.1              # Integra fácilmente tipografías de Google Fonts
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+  # google_mobile_ads: ^5.1.0
+  firebase_app_check: ^0.3.2+6
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.0.0
+  url_launcher: ^6.3.1
+  printing: ^5.14.2       # para la función de imprimir
+  share_plus: ^11.0.0     # para compartir imágenes/texto
+  flutter_slidable: ^4.0.0
+  shared_preferences: ^2.5.3
+  flutter_screenutil: ^5.9.3
+  cupertino_icons: ^1.0.8
+  font_awesome_flutter: ^10.8.0
+  hexcolor: ^3.0.1
+  flutter_map: ^8.1.1
+  latlong2: ^0.9.1
+  flutter_tabler_icons: ^1.43.0
+  mobile_number: ^3.0.0
+  cached_network_image: ^3.4.1
+  flutter_svg: ^2.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/placeholder.png
+    - assets/svg/zelle.svg
+    - assets/svg/bankcup.svg
+    - assets/svg/bankmlc.svg
+    - assets/svg/etecsa.svg
+    - assets/images/logo_white.png
+    - assets/images/logo_colores.png
+    - assets/icons/alarm.png 
+    - assets/icons/arrow-narrow-right.png 
+    - assets/icons/barbell.png 
+    - assets/icons/bell.png 
+    - assets/icons/bolt.png 
+    - assets/icons/brand-apple-filled.png 
+    - assets/icons/brand-google-filled.png 
+    - assets/icons/calendar-check.png 
+    - assets/icons/cards.png 
+    - assets/icons/category-plus.png 
+    - assets/icons/clock-hour-9.png 
+    - assets/icons/credit-card.png 
+    - assets/icons/device-sim.png 
+    - assets/icons/gymnastics.png 
+    - assets/icons/library.png 
+    - assets/icons/menu-2.png 
+    - assets/icons/pennant-2.png 
+    - assets/icons/run.png 
+    - assets/icons/stretching.png 
+    - assets/icons/x.png
+    - assets/icons/neutral_emoji.png 
+    - assets/icons/sad_emoji.png 
+    - assets/icons/happy_emoji.png
+    - assets/icons/dropdown_icon.png
