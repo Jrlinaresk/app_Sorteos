@@ -9,3 +9,7 @@ enum Mood { happy, neutral, sad }
 enum AthletesFilterType { all, followed, followers }
 
 enum PaymentStatus { created, proccessing, completed }
+
+enum TransactionStatus { insufficientFunds, serverError }
+
+enum TxType { deposit, payment, refund }

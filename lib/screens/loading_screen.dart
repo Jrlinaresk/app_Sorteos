@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sorteos_app/theme/theme.dart';
 
 /// Pantalla de carga full‑screen. Devuelve `true` si el usuario pulsó atrás.
 class LoadingScreen extends StatelessWidget {
@@ -52,17 +53,17 @@ class LoadingScreen extends StatelessWidget {
         return false;
       },
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(240, 0, 0, 0),
+        backgroundColor: MaterialTheme.greenColor,
         body: SafeArea(
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (logo != null) ...[
-                  SizedBox(width: 100.w, height: 100.w, child: logo),
+                  SizedBox(width: 256.w, height: 256.w, child: logo),
                   SizedBox(height: 24.h),
                 ],
-                const CircularProgressIndicator(),
+                CircularProgressIndicator(color: MaterialTheme.whiteColor),
                 SizedBox(height: 24.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 32.w),

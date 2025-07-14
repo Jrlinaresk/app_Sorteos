@@ -2,11 +2,16 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sorteos_app/enums/enums.dart';
+import 'package:sorteos_app/notificaciones/snackbars.dart';
 import 'package:sorteos_app/theme/theme.dart';
+import 'package:sorteos_app/widgets/raffle_card.dart';
 import '../extensions/raffle_status_extension.dart';
 import '../models/raffle.dart';
 import '../models/participant.dart';
@@ -41,19 +46,45 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
     });
   }
 
-  Future<void> _participate(Raffle r) async {
+  Future<void> _participate(Raffle r, int cnt) async {
     setState(() => _loading = true);
     try {
       final api = ref.read(apiServiceProvider);
+      // Llamas a tu endpoint de participación
       await api.participate(r.id, _userId!);
+
+      // Refrescas los datos de la rifa
       await ref.refresh(raffleDetailProvider(r.id).future);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('¡Participación exitosa!')));
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+
+      // Navegas a la pantalla de éxito
+      cnt == 0
+          ? context.goNamed('transactionComplete')
+          : AppSnackbar.showSnackbar(
+            context,
+            '¡Genial.. has aumentado tus posibilidades!',
+            "Ya tienes ${cnt + 1} tickets",
+            TypeSnackBar.success,
+          );
+      ;
+    } on Exception catch (e) {
+      final msg = e.toString().toLowerCase();
+
+      // Detectar si es saldo insuficiente
+      if (msg.contains('saldo insuficiente')) {
+        context.pushNamed(
+          'transactionError',
+          extra: {
+            'status': TransactionStatus.insufficientFunds,
+            'userId': _userId!,
+          },
+        );
+      } else {
+        // Otro error de servidor
+        context.goNamed(
+          'transactionError',
+          extra: {'status': TransactionStatus.serverError, 'userId': _userId!},
+        );
+      }
     } finally {
       setState(() => _loading = false);
     }
@@ -118,7 +149,10 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
             : ref.watch(userProvider(_userId!));
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        iconTheme: IconThemeData(color: MaterialTheme.whiteColor),
+        backgroundColor: Colors.transparent,
         titleSpacing: 0,
         title: Row(
           children: [
@@ -127,272 +161,290 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
               child: Text(
                 widget.name,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleLarge,
+                style: TextStyle(
+                  fontSize: Theme.of(context).textTheme.titleLarge!.fontSize,
+                  color: MaterialTheme.whiteColor,
+                ),
               ),
-            ),
-
-            // Then your balance widget—always returns a Widget, never null
-            userAsync.when(
-              data: (user) {
-                if (user == null) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '\$${user.balance.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              loading:
-                  () => const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  ),
-              error: (_, __) => const Icon(Icons.error, color: Colors.white),
             ),
           ],
         ),
       ),
 
-      body: asyncR.when(
-        loading: () => Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (r) {
-          final condicion = r.itemCondition;
-          final status = r.status;
-          final ext = status;
-          final participants = r.participants;
-          final remaining =
-              r.drawDate != null
-                  ? r.drawDate!.difference(DateTime.now().toLocal())
-                  : Duration.zero;
+      body: Container(
+        color: MaterialTheme.whiteColor,
+        height: double.infinity,
+        child: asyncR.when(
+          loading: () => Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Error: $e')),
+          data: (r) {
+            final condicion = r.itemCondition;
+            final status = r.status;
+            final ext = status;
+            final participants = r.participants;
+            final remaining =
+                r.drawDate != null
+                    ? r.drawDate!.difference(DateTime.now().toLocal())
+                    : Duration.zero;
 
-          return Padding(
-            padding: const EdgeInsets.only(
-              top: 2,
-              bottom: 16,
-              left: 16,
-              right: 16,
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 2, bottom: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // --- BLOQUE 1: IMAGEN + TÍTULO
-                  if (r.imageUrl != null)
-                    SizedBox(
-                      width: 56.w,
-                      height: 300.h,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.r),
-                        child: Stack(
-                          children: [
-                            // 1) Imagen de fondo a cubrir todo el espacio
-                            Positioned.fill(
-                              child:
-                                  r.imageUrl != null
-                                      ? CachedNetworkImage(
-                                        imageUrl: r.imageUrl!,
-                                        fit: BoxFit.cover,
-                                        placeholder:
-                                            (context, url) => Container(
-                                              color: Colors.grey.shade200,
-                                              child: Center(
-                                                child: Image.asset(
-                                                  'assets/images/placeholder.png',
-                                                  fit: BoxFit.cover,
+            return !_loading
+                ? Container(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      top: 2,
+                      bottom: 0,
+                      left: 16,
+                      right: 16,
+                    ),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // --- BLOQUE 1: IMAGEN + TÍTULO
+                          if (r.imageUrl != '')
+                            SizedBox(
+                              width: 56.w,
+                              height: 300.h,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.r),
+                                child: Stack(
+                                  children: [
+                                    // 1) Imagen de fondo a cubrir todo el espacio
+                                    Positioned.fill(
+                                      child:
+                                          r.imageUrl != ''
+                                              ? CachedNetworkImage(
+                                                cacheManager: CacheManager(
+                                                  Config(
+                                                    'customCacheKey',
+                                                    stalePeriod: const Duration(
+                                                      days: 31,
+                                                    ),
+                                                    maxNrOfCacheObjects: 100,
+                                                  ),
+                                                ),
+                                                imageUrl: r.imageUrl!,
+                                                fit: BoxFit.cover,
+                                                placeholder:
+                                                    (context, url) => Container(
+                                                      color:
+                                                          MaterialTheme
+                                                              .whiteColor,
+                                                      child: Center(
+                                                        child: Image.asset(
+                                                          'assets/images/placeholder.png',
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Container(
+                                                          color: MaterialTheme
+                                                              .greenColor
+                                                              .withValues(
+                                                                alpha: 0.15,
+                                                              ),
+                                                          child: Icon(
+                                                            Icons.broken_image,
+                                                            color:
+                                                                MaterialTheme
+                                                                    .greenColor,
+                                                            size: 32.w,
+                                                          ),
+                                                        ),
+                                              )
+                                              : Container(
+                                                color: MaterialTheme.greenColor,
+                                                child: Icon(
+                                                  Icons.card_giftcard,
+                                                  size: 32.w,
+                                                  color:
+                                                      MaterialTheme.greenColor,
                                                 ),
                                               ),
-                                            ),
-                                        errorWidget:
-                                            (context, url, error) => Container(
-                                              color: Colors.grey.shade200,
-                                              child: Icon(
-                                                Icons.broken_image,
-                                                color: Colors.grey,
-                                                size: 32.w,
-                                              ),
-                                            ),
-                                      )
-                                      : Container(
-                                        color: Colors.grey.shade200,
-                                        child: Icon(
-                                          Icons.card_giftcard,
-                                          size: 32.w,
-                                          color: Colors.grey,
+                                    ),
+                                    // 2) Texto en la parte inferior, sobre una franja semitransparente
+                                    if ((r.description ?? '').isNotEmpty)
+                                      Positioned(
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        child: Container(
+                                          color: MaterialTheme.greenColor
+                                              .withValues(alpha: .8),
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 8.w,
+                                            vertical: 4.h,
+                                          ),
+                                          // maxLines y overflow para evitar que crezca demasiado
+                                          child: Text(
+                                            r.description!,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium!
+                                                .copyWith(color: Colors.white),
+                                          ),
                                         ),
                                       ),
-                            ),
-                            // 2) Texto en la parte inferior, sobre una franja semitransparente
-                            if ((r.description ?? '').isNotEmpty)
-                              Positioned(
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  color: Colors.black.withOpacity(0.4),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.w,
-                                    vertical: 4.h,
-                                  ),
-                                  // maxLines y overflow para evitar que crezca demasiado
-                                  child: Text(
-                                    r.description!,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium!
-                                        .copyWith(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: ext.backgroundColor,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                condicion,
-                                style: TextStyle(
-                                  color: ext.textColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  SizedBox(height: 8.0),
-
-                  // --- BLOQUE 4: FECHA / COUNTDOWN / ESTADO
-                  // dentro de tu build:
-                  if (status == 'open')
-                    Padding(
-                      padding: const EdgeInsets.only(top: 0, bottom: 8),
-                      child: CountdownDisplay(
-                        target: r.drawDate!,
-                        panelColor: MaterialTheme.greenColor.withValues(
-                          alpha: .9,
-                        ),
-                        digitColor: Colors.white,
-                        labelColor: Colors.white70,
-                      ),
-                    ),
-                  if (status == 'open')
-                    Text(
-                      '🎉 ¡Atento! El sorteo cierra automáticamente al llegar la fecha límite ⏰. 🏆 Los ganadores reciben un SMS y también pueden verlos aquí en la app. 📲',
-                    ),
-                  SizedBox(height: 8),
-
-                  // --- BOTÓN PARTICIPAR
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // --- BLOQUE 3: ESTADÍSTICAS
-                      if (status == 'open')
-                        Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    _showParticipants(r.participants);
-                                  },
-                                  child: _StatItem(
-                                    icon: Icons.people,
-                                    label:
-                                        '${participants.length}/${r.maxParticipants}',
-                                    sub: 'Participantes',
-                                  ),
-                                ),
-                                _StatItem(
-                                  icon: Icons.confirmation_number,
-                                  label:
-                                      '\$${r.ticketPrice.toStringAsFixed(2)}',
-                                  sub: 'Ticket',
-                                ),
-                                _StatItem(
-                                  icon: Icons.attach_money,
-                                  label: '\$${r.itemPrice.toStringAsFixed(2)}',
-                                  sub: 'Premio',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      Container(
-                        padding: EdgeInsets.only(top: 8),
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          icon:
-                              _loading
-                                  ? SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: ext.backgroundColor,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        condicion,
+                                        style: TextStyle(
+                                          color: ext.textColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ),
-                                  )
-                                  : Icon(
-                                    Icons.how_to_reg,
-                                    // You can also override the icon color individually if you like:
-                                    // color: MaterialTheme.redColor,
-                                  ),
-                          label: Text(
-                            status == 'open' ? 'Participar' : 'Ver Ganadores',
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            // Text & icon color
-                            foregroundColor: MaterialTheme.greenColor,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            textStyle: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                                  ],
+                                ),
+                              ),
                             ),
+                          SizedBox(height: 8.0),
+
+                          // --- BLOQUE 4: FECHA / COUNTDOWN / ESTADO
+                          // dentro de tu build:
+                          if (status == 'open')
+                            Padding(
+                              padding: const EdgeInsets.only(top: 0, bottom: 8),
+                              child: CountdownDisplay(
+                                target: r.drawDate!,
+                                panelColor: MaterialTheme.greenColor.withValues(
+                                  alpha: .9,
+                                ),
+                                digitColor: Colors.white,
+                                labelColor: Colors.white70,
+                              ),
+                            ),
+                          if (status == 'open')
+                            Text(
+                              '🎉 ¡Atento! El sorteo cierra automáticamente al llegar la fecha límite ⏰. 🏆 Los ganadores reciben un SMS y también pueden verlos aquí en la app. 📲',
+                            ),
+                          SizedBox(height: 8),
+
+                          // --- BOTÓN PARTICIPAR
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // --- BLOQUE 3: ESTADÍSTICAS
+                              if (status == 'open')
+                                Card(
+                                  color: MaterialTheme.whiteColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            r.participants.length > 0
+                                                ? _showParticipants(
+                                                  r.participants,
+                                                )
+                                                : ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      'No hay participantes aun 😢',
+                                                    ),
+                                                  ),
+                                                );
+                                          },
+                                          child: _StatItem(
+                                            icon: Icons.people,
+                                            label:
+                                                '${participants.length}/${r.maxParticipants}',
+                                            sub: 'Participantes',
+                                          ),
+                                        ),
+                                        _StatItem(
+                                          icon: Icons.confirmation_number,
+                                          label:
+                                              '\$${formatCeil2(r.ticketPrice * 400)}',
+                                          sub: 'Ticket',
+                                        ),
+                                        // _StatItem(
+                                        //   icon: Icons.attach_money,
+                                        //   label:
+                                        //       '\$${r.itemPrice.toStringAsFixed(2)}',
+                                        //   sub: 'Premio',
+                                        // ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                              Container(
+                                padding: EdgeInsets.only(top: 16, bottom: 16.0),
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  icon:
+                                      _loading
+                                          ? SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                          : Icon(
+                                            Icons.how_to_reg,
+                                            // You can also override the icon color individually if you like:
+                                            // color: MaterialTheme.redColor,
+                                          ),
+                                  label: Text(
+                                    status == 'open'
+                                        ? 'Participar'
+                                        : 'Ver Ganadores',
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    // Text & icon color
+                                    foregroundColor: MaterialTheme.greenColor,
+                                    padding: EdgeInsets.symmetric(vertical: 16),
+                                    backgroundColor: MaterialTheme.whiteColor,
+                                    textStyle: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    if (status == 'open') {
+                                      _participate(r, participants.length);
+                                    } else {
+                                      _showParticipants(r.winners);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                          onPressed: () {
-                            if (status == 'open') {
-                              _participate(r);
-                            } else {
-                              _showParticipants(r.winners);
-                            }
-                          },
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-          );
-        },
+                )
+                : Center(child: CircularProgressIndicator());
+          },
+        ),
       ),
     );
   }

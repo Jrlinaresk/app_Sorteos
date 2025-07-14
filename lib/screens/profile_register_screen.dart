@@ -18,13 +18,14 @@ import '../services/api_service.dart';
 import '../models/user.dart';
 import '../providers/providers.dart';
 
-class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+class ProfileRegisterScreen extends ConsumerStatefulWidget {
+  const ProfileRegisterScreen({super.key});
   @override
-  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileRegisterScreen> createState() =>
+      _ProfileRegisterScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
   String? _phone;
   bool _isPermissionGranted = false;
   final _nickController = TextEditingController();
@@ -109,12 +110,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         // si no es JSON válido, devolvemos el texto completo
         msg = message;
       }
-      AppSnackbar.showSnackbar(
-        context,
-        '¡Algo salió mal, intenta de nuevo!',
-        message,
-        TypeSnackBar.error,
-      );
+
+      try {
+        final api = ref.read(apiServiceProvider);
+        final user = await api.login('+${_phone!.split("+")[1]}', nick);
+        // guardas user.id en prefs y navegas:
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', user.id);
+        await prefs.setString('phone', user.phone);
+        await prefs.setString('nickname', user.nickname);
+
+        context.goNamed('home', extra: {'userId': user.id});
+      } catch (e) {
+        AppSnackbar.showSnackbar(
+          context,
+          '¡Algo salió mal, intenta de nuevo!',
+          e.toString(),
+          TypeSnackBar.error,
+        );
+      }
 
       setState(() => _error = msg);
     } finally {
@@ -150,7 +164,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     backgroundColor: Colors.transparent,
                   ),
                   Card(
-                    color: MaterialTheme.otherColor2,
+                    color: MaterialTheme.greenColor.withValues(alpha: .1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

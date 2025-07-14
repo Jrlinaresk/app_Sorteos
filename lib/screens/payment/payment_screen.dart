@@ -7,10 +7,11 @@ import 'package:go_router/go_router.dart';
 import 'package:sorteos_app/theme/theme.dart';
 import 'package:sorteos_app/validators/validators.dart';
 
-import '../widgets/payment_method_card.dart';
+import '../../widgets/payment_method_card.dart';
 
 class PaymentScreen extends ConsumerStatefulWidget {
-  const PaymentScreen({Key? key}) : super(key: key);
+  final String userId;
+  const PaymentScreen({Key? key, required this.userId}) : super(key: key);
 
   @override
   ConsumerState<PaymentScreen> createState() => _PaymentScreenState();
@@ -72,35 +73,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     });
   }
 
-  Future<void> _sendConfirmationCode() async {
-    final text = _amountController.text.trim();
-    final amount = double.tryParse(text.replaceAll(',', '.'));
-    if (amount == null || amount <= 0) {
-      setState(() => _amountError = 'Introduce un monto válido');
-      return;
-    }
-    // Ahora verifico el mínimo dinámico
-    if (_selectedMin != null && amount! < _selectedMin!) {
-      setState(
-        () =>
-            _amountError =
-                'Para $_selectedAccount el mínimo es \$${_selectedMin!.toStringAsFixed(2)}',
-      );
-      return;
-    }
-    setState(() {
-      _amountError = null;
-      _sending = true;
-    });
-
-    // Aquí recibes el operationId para guardarlo o mostrarlo.
-
-    setState(() => _sending = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Código enviado a $_selectedAccount')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     // Métodos de pago de ejemplo
@@ -148,8 +120,31 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Depositar'),
-        titleSpacing: 0,
+        title: Row(
+          children: [
+            // El título
+            Expanded(
+              child: Text(
+                'Depositar',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            // Botón de cierre
+            InkWell(
+              onTap: () => context.goNamed('home'),
+              child: Padding(
+                padding: EdgeInsets.only(right: context.canPop() ? 24.w : 16.w),
+                child: Icon(Icons.close, size: 24.w, color: Colors.black54),
+              ),
+            ),
+          ],
+        ),
+        titleSpacing: context.canPop() ? 0 : 16.w,
         centerTitle: false,
       ),
       body: Padding(
@@ -270,9 +265,13 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       : 'Enviar código de confirmación',
                 ),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 48.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                  // Text & icon color
+                  foregroundColor: MaterialTheme.greenColor,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: MaterialTheme.whiteColor,
+                  textStyle: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 onPressed: () async {
@@ -285,6 +284,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   await context.pushNamed(
                     'confirmTransfer',
                     extra: {
+                      'userId': widget.userId,
                       'methodName': _selecedMethodName,
                       'svg': _selectedSvg!,
                       'account': _selectedAccount!,

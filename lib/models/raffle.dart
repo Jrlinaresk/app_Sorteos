@@ -1,3 +1,5 @@
+import 'package:sorteos_app/models/product.dart';
+
 import 'participant.dart';
 
 class Raffle {
@@ -18,6 +20,7 @@ class Raffle {
   final String itemCondition;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final List<Product> products;
 
   Raffle({
     required this.id,
@@ -37,6 +40,7 @@ class Raffle {
     required this.itemCondition,
     required this.createdAt,
     required this.updatedAt,
+    required this.products,
   });
 
   factory Raffle.fromJson(Map<String, dynamic> json) {
@@ -75,6 +79,11 @@ class Raffle {
       itemCondition: json['itemCondition'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      products:
+          (json['products'] as List<dynamic>?)
+              ?.map((p) => Product.fromJson(p as Map<String, dynamic>))
+              .toList() ??
+          <Product>[],
     );
   }
 }

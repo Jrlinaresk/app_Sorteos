@@ -72,7 +72,7 @@ class BackgroundLayer extends StatelessWidget {
                   color: Colors.transparent,
                   boxShadow: [
                     BoxShadow(
-                      color: MaterialTheme.otherColor2.withValues(alpha: .2),
+                      color: MaterialTheme.whiteColor.withValues(alpha: .2),
                       blurRadius: 134.r,
                       spreadRadius: 24.r,
                     ),

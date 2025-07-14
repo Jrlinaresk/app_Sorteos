@@ -23,7 +23,10 @@ class OkButton extends StatelessWidget {
     // Elegimos el degradado según el estado enabled
     final gradientColors =
         enabled
-            ? [MaterialTheme.otherColor2, MaterialTheme.otherColor2]
+            ? [
+              MaterialTheme.greenColor.withValues(alpha: .8),
+              MaterialTheme.greenColor.withValues(alpha: .1),
+            ]
             : [
               const Color.fromARGB(255, 172, 172, 172),
               const Color.fromARGB(255, 46, 46, 46),

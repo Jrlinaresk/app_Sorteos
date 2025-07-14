@@ -47,6 +47,7 @@ dependencies:
   flutter_tabler_icons: ^1.43.0
   mobile_number: ^3.0.0
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
   flutter_svg: ^2.2.0
   stylish_bottom_bar: ^1.1.1
 
@@ -54,6 +55,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo_colores.png"
 
 flutter:
   uses-material-design: true
@@ -90,3 +97,4 @@ flutter:
     - assets/icons/sad_emoji.png 
     - assets/icons/happy_emoji.png
     - assets/icons/dropdown_icon.png
+    - assets/uploads/

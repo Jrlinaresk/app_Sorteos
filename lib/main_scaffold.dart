@@ -8,8 +8,10 @@ import 'package:sorteos_app/screens/exit_confirmation_screen.dart';
 import 'package:sorteos_app/screens/loading_screen.dart';
 import 'package:sorteos_app/theme/background_layer.dart';
 import 'package:sorteos_app/theme/theme.dart';
-import 'package:sorteos_app/widgets/custom_tabBar.dart';
+import 'package:sorteos_app/widgets/drawer/app_drawer.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
+
+final _scaffoldKey = GlobalKey<ScaffoldState>();
 
 /// Este widget envuelve todas las vistas de “/app/*”
 class MainScaffold extends ConsumerStatefulWidget {
@@ -26,12 +28,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   ProviderSubscription<AsyncValue<dynamic>>? _userListener;
 
   /// Mapea índice de BottomBar ⇄ ruta
-  static const tabs = [
-    '/app/home',
-    '/app/favorites',
-    '/app/shop',
-    '/app/profile',
-  ];
+  static const tabs = ['/app/home', '/app/transactions', '/app/profile'];
 
   Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
@@ -86,6 +83,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: BackgroundLayer(
+        key: _scaffoldKey,
         appBar: AppBar(
           iconTheme: IconThemeData(color: MaterialTheme.whiteColor),
           titleSpacing: 0.0,
@@ -98,7 +96,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Rifas Habana',
+                    'Sorteos Cuba',
                     style: Theme.of(context).textTheme.titleMedium!.copyWith(
                       fontWeight: FontWeight.w900,
                       color: MaterialTheme.whiteColor,
@@ -123,7 +121,11 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
                           size: 28.w,
                         ),
                         tooltip: 'Recargar saldo',
-                        onPressed: () => context.pushNamed('recharge'),
+                        onPressed:
+                            () => context.pushNamed(
+                              'recharge',
+                              extra: {'userId': _userId},
+                            ),
                       ),
                     ],
                   ),
@@ -134,33 +136,10 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
             error: (_, __) => const Icon(Icons.error, size: 20),
           ),
         ),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              const DrawerHeader(child: Text('Menú')),
-              ListTile(
-                leading: const Icon(Icons.home),
-                title: const Text('Home'),
-                onTap: () => context.go(tabs[0]),
-              ),
-              ListTile(
-                leading: const Icon(Icons.favorite),
-                title: const Text('Favoritos'),
-                onTap: () => context.go(tabs[1]),
-              ),
-              ListTile(
-                leading: const Icon(Icons.store),
-                title: const Text('Tienda'),
-                onTap: () => context.go(tabs[2]),
-              ),
-              ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('Perfil'),
-                onTap: () => context.go(tabs[3]),
-              ),
-            ],
-          ),
-        ),
+        drawer:
+            _userId != null
+                ? AppDrawer(scaffoldKey: _scaffoldKey, userId: _userId!)
+                : null,
 
         /// Aquí va el contenido de cada ruta anidada
         child: widget.child,
@@ -212,7 +191,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
             ],
             onTap: (index) {
               setState(() => _currentIndex = index);
-              context.go(tabs[index]);
+              context.go(tabs[index], extra: _userId);
             },
           ),
         ),
