@@ -34,9 +34,6 @@ class CustomTextField extends StatefulWidget {
   /// Callback que notifica cambios de texto
   final ValueChanged<String>? onChanged;
 
-  /// Llave para acceder al estado interno del FormField
-  final GlobalKey<FormFieldState<String>>? fieldKey;
-
   /// Etiqueta que aparece por encima del campo (opcional)
   final String? label;
 
@@ -65,6 +62,8 @@ class CustomTextField extends StatefulWidget {
   /// Icono y callback para el toggle de ocultar/mostrar contraseña
   final IconData? obscureToggleIcon;
   final VoidCallback? onObscureTogglePressed;
+
+  final dynamic fieldKey;
 
   @override
   CustomTextFieldState createState() => CustomTextFieldState();
@@ -141,7 +140,7 @@ class CustomTextFieldState extends State<CustomTextField> {
                           padding: const EdgeInsets.only(right: 16),
                           icon: Icon(
                             widget.obscureToggleIcon,
-                            color: MaterialTheme.otherColor2.withValues(
+                            color: MaterialTheme.oranchColor.withValues(
                               alpha: .8,
                             ),
                           ),

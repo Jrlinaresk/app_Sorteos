@@ -47,6 +47,7 @@ dependencies:
   flutter_tabler_icons: ^1.43.0
   mobile_number: ^3.0.0
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
   flutter_svg: ^2.2.0
   stylish_bottom_bar: ^1.1.1
 
@@ -54,6 +55,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo_colores.png"
 
 flutter:
   uses-material-design: true
@@ -66,27 +73,4 @@ flutter:
     - assets/svg/etecsa.svg
     - assets/images/logo_white.png
     - assets/images/logo_colores.png
-    - assets/icons/alarm.png 
-    - assets/icons/arrow-narrow-right.png 
-    - assets/icons/barbell.png 
-    - assets/icons/bell.png 
-    - assets/icons/bolt.png 
-    - assets/icons/brand-apple-filled.png 
-    - assets/icons/brand-google-filled.png 
-    - assets/icons/calendar-check.png 
-    - assets/icons/cards.png 
-    - assets/icons/category-plus.png 
-    - assets/icons/clock-hour-9.png 
-    - assets/icons/credit-card.png 
-    - assets/icons/device-sim.png 
-    - assets/icons/gymnastics.png 
-    - assets/icons/library.png 
-    - assets/icons/menu-2.png 
-    - assets/icons/pennant-2.png 
-    - assets/icons/run.png 
-    - assets/icons/stretching.png 
-    - assets/icons/x.png
-    - assets/icons/neutral_emoji.png 
-    - assets/icons/sad_emoji.png 
-    - assets/icons/happy_emoji.png
-    - assets/icons/dropdown_icon.png
+    - assets/uploads/

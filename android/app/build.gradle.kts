@@ -30,13 +30,44 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
-        }
-    }
+    // signingConfigs {
+    //     release {
+    //         keyAlias keystoreProperties['keyAlias']
+    //         keyPassword keystoreProperties['keyPassword']
+    //         storeFile file(keystoreProperties['storeFile'])
+    //         storePassword keystoreProperties['storePassword']
+    //     }
+    //     debug {
+    //         keyAlias keystoreProperties['keyAlias']
+    //         keyPassword keystoreProperties['keyPassword']
+    //         storeFile file(keystoreProperties['storeFile'])
+    //         storePassword keystoreProperties['storePassword']
+    //     }
+    // }
+
+    // buildTypes {
+    //     release {
+    //         // TODO: Add your own signing config for the release build.
+    //         // Signing with the debug keys for now, so `flutter run --release` works.
+    //         signingConfig = signingConfigs.release
+    //         minifyEnabled = true           // activa R8 para eliminar código muerto
+    //         shrinkResources = true         // elimina recursos (drawables, strings) no referenciados
+    //         }
+    //       debug {
+    //         // TODO: Add your own signing config for the release build.
+    //         // Signing with the debug keys for now, so `flutter run --release` works.
+    //         signingConfig = signingConfigs.debug
+    //     }
+        
+    // }
+    // splits {
+    //     abi { 
+    //         enable = true; 
+    //         reset(); 
+    //         include 'armeabi-v7a','arm64-v8a','x86_64';
+    //          universalApk = false 
+    //     }
+    // }
 }
 
 flutter {

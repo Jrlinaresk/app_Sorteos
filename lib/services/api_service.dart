@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:sorteos_app/models/transferencia/create_transaction.dto.dart';
+import 'package:sorteos_app/models/transferencia/transaction.dart';
 import 'package:sorteos_app/models/user.dart';
 import '../models/category.dart';
 import '../models/raffle.dart';
@@ -35,7 +37,10 @@ class ApiService {
           .map((e) => Category.fromJson(e as Map<String, dynamic>))
           .toList();
     }
-    throw Exception('Failed to load categories');
+    final Map<String, dynamic> map = json.decode(resp.body);
+    final String soloMensaje = map['message'] as String;
+
+    throw Exception(soloMensaje);
   }
 
   Future<List<Raffle>> fetchRaffles({String? categoryId}) async {
@@ -50,7 +55,10 @@ class ApiService {
           .map((e) => Raffle.fromJson(e as Map<String, dynamic>))
           .toList();
     }
-    throw Exception('Failed to load raffles');
+    final Map<String, dynamic> map = json.decode(resp.body);
+    final String soloMensaje = map['message'] as String;
+
+    throw Exception(soloMensaje);
   }
 
   Future<Raffle> fetchRaffle(String id) async {
@@ -68,7 +76,10 @@ class ApiService {
       body: json.encode({'raffleId': raffleId}),
     );
     if (resp.statusCode != 201) {
-      throw Exception('Failed to participate');
+      final Map<String, dynamic> map = json.decode(resp.body);
+      final String soloMensaje = map['message'] as String;
+
+      throw Exception(soloMensaje);
     }
   }
 
@@ -77,6 +88,56 @@ class ApiService {
     if (resp.statusCode == 200) {
       return User.fromJson(json.decode(resp.body) as Map<String, dynamic>);
     }
-    throw Exception('Failed to load user');
+    final Map<String, dynamic> map = json.decode(resp.body);
+    final String soloMensaje = map['message'] as String;
+
+    throw Exception(soloMensaje);
+  }
+
+  Future<List<TransactionModel>> fetchUserTransactions(String userId) async {
+    final uri = Uri.parse('$baseUrl/transactions/user/$userId');
+    final resp = await http.get(uri);
+    if (resp.statusCode == 200) {
+      final List data = json.decode(resp.body) as List;
+      return data.map((e) => TransactionModel.fromJson(e)).toList();
+    }
+    final Map<String, dynamic> map = json.decode(resp.body);
+    final String soloMensaje = map['message'] as String;
+
+    throw Exception(soloMensaje);
+  }
+
+  Future<TransactionModel> createTransaction(CreateTransactionDto dto) async {
+    final uri = Uri.parse('$baseUrl/transactions');
+    final resp = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(dto.toJson()),
+    );
+    if (resp.statusCode == 201) {
+      return TransactionModel.fromJson(json.decode(resp.body));
+    }
+    final Map<String, dynamic> map = json.decode(resp.body);
+    final String soloMensaje = map['message'].split(':')[1];
+    throw Exception(soloMensaje);
+  }
+
+  Future<User> login(String phone, String nickname) async {
+    final uri = Uri.parse('$baseUrl/users/login');
+    final resp = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'phone': phone.trim(), 'nickname': nickname.trim()}),
+    );
+
+    if (resp.statusCode == 201) {
+      return User.fromJson(json.decode(resp.body) as Map<String, dynamic>);
+    }
+
+    final Map<String, dynamic> map = json.decode(resp.body);
+    final String soloMensaje =
+        map['message'] as String? ??
+        'Error al hacer login (status ${resp.statusCode})';
+    throw Exception(soloMensaje);
   }
 }

@@ -13,13 +13,13 @@ class AppSnackbar {
     final Color background;
     switch (type) {
       case TypeSnackBar.success:
-        background = MaterialTheme.dialogInfoColor;
+        background = MaterialTheme.greenColor;
         break;
       case TypeSnackBar.warning:
-        background = MaterialTheme.dialogWarningColor;
+        background = MaterialTheme.pinkColor;
         break;
       case TypeSnackBar.error:
-        background = MaterialTheme.dialogErrorColor;
+        background = MaterialTheme.redColor;
         break;
     }
 

@@ -6,7 +6,7 @@ class OkButton extends StatelessWidget {
   final String title;
   final bool isLoading;
   final VoidCallback onPressed;
-  final String? iconData;
+  final IconData? iconData;
   final bool enabled; // ← Nuevo parámetro
 
   const OkButton({
@@ -14,7 +14,7 @@ class OkButton extends StatelessWidget {
     required this.title,
     required this.isLoading,
     required this.onPressed,
-    this.iconData = "assets/icons/arrow-narrow-right.png",
+    this.iconData = Icons.arrow_forward,
     this.enabled = true, // ← Por defecto habilitado
   });
 
@@ -23,7 +23,10 @@ class OkButton extends StatelessWidget {
     // Elegimos el degradado según el estado enabled
     final gradientColors =
         enabled
-            ? [MaterialTheme.otherColor2, MaterialTheme.otherColor2]
+            ? [
+              MaterialTheme.greenColor.withValues(alpha: .8),
+              MaterialTheme.greenColor.withValues(alpha: .1),
+            ]
             : [
               const Color.fromARGB(255, 172, 172, 172),
               const Color.fromARGB(255, 46, 46, 46),
@@ -89,10 +92,9 @@ class OkButton extends StatelessWidget {
                             SizedBox(
                               width: 32,
                               child: Center(
-                                child: Image.asset(
-                                  iconData!,
-                                  width: 64.sp,
-                                  height: 64.sp,
+                                child: Icon(
+                                  iconData,
+                                  color: MaterialTheme.whiteColor,
                                 ),
                               ),
                             ),

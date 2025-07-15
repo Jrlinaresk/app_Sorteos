@@ -1,98 +1,172 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sorteos_app/enums/enums.dart';
+import 'package:sorteos_app/screens/error/error_status_screen.dart';
 import 'package:sorteos_app/screens/favorites_screen.dart';
-import 'package:sorteos_app/screens/main_scaffold.dart';
+import 'package:sorteos_app/screens/home_screen.dart';
+import 'package:sorteos_app/main_scaffold.dart';
 import 'package:sorteos_app/screens/payment/confirm_transfer_screen.dart';
+import 'package:sorteos_app/screens/payment/payment_screen.dart';
+import 'package:sorteos_app/screens/transactions/transaction_complete_screen.dart';
+import 'package:sorteos_app/screens/profile/profile_screen.dart';
+import 'package:sorteos_app/screens/profile/profile_register_screen.dart';
+import 'package:sorteos_app/screens/raffle_detail_screen.dart';
 import 'package:sorteos_app/screens/shop_screen.dart';
-
-import 'screens/profile_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/raffle_detail_screen.dart';
-import 'screens/payment_screen.dart';
+import 'package:sorteos_app/screens/transactions/user_transactions_screen.dart';
 
 final router = GoRouter(
-  initialLocation: '/app/home',
+  initialLocation: '/profile_register',
   routes: [
-    /// ShellRoute para el scaffold que incluye Drawer + BottomBar
     ShellRoute(
       builder: (context, state, child) => MainScaffold(child: child),
       routes: [
-        /// Home
         GoRoute(
           path: '/app/home',
           name: 'home',
-          builder: (_, __) => const HomeScreen(),
+          pageBuilder:
+              (context, state) => NoTransitionPage(child: const HomeScreen()),
           routes: [
             GoRoute(
               path: 'raffle/:id',
               name: 'raffleDetail',
-              builder: (context, state) {
-                return RaffleDetailScreen(
-                  raffleId: state.pathParameters['id']!,
-                  name: state.extra as String? ?? '',
+              pageBuilder: (context, state) {
+                return NoTransitionPage(
+                  child: RaffleDetailScreen(
+                    raffleId: state.pathParameters['id']!,
+                    name: state.extra as String? ?? '',
+                  ),
                 );
               },
             ),
           ],
         ),
-
-        /// Favoritos
         GoRoute(
           path: '/app/favorites',
           name: 'favorites',
-          builder: (_, __) => const FavoritesScreen(),
+          pageBuilder:
+              (context, state) =>
+                  NoTransitionPage(child: const FavoritesScreen()),
         ),
-
-        /// Tienda
         GoRoute(
           path: '/app/shop',
           name: 'shop',
-          builder: (_, __) => const ShopScreen(),
+          pageBuilder:
+              (context, state) => NoTransitionPage(child: const ShopScreen()),
         ),
-
-        /// Perfil
         GoRoute(
           path: '/app/profile',
           name: 'profile',
-          builder: (_, __) => const ProfileScreen(),
+          pageBuilder: (context, state) {
+            final userId = state.extra as String;
+            return NoTransitionPage(child: UserProfileScreen(userId: userId));
+          },
+        ),
+        GoRoute(
+          path: '/app/transactions',
+          name: 'userTransactions',
+          pageBuilder:
+              (context, state) =>
+                  NoTransitionPage(child: const UserTransactionsScreen()),
         ),
       ],
     ),
-
-    /// Rutas “flotantes” fuera del shell (sin BottomBar)
+    GoRoute(
+      path: '/profile_register',
+      name: 'profile_register',
+      pageBuilder:
+          (context, state) =>
+              NoTransitionPage(child: const ProfileRegisterScreen()),
+    ),
     GoRoute(
       path: '/payment',
       name: 'recharge',
-      builder: (_, __) => const PaymentScreen(),
+      pageBuilder: (context, state) {
+        // casteo seguro, puede venir null
+        final extra = state.extra as Map<String, dynamic>?;
+        final userId = extra?['userId'] as String?;
+        if (userId == null) {
+          // si no hay userId, rediriges de nuevo al home o lanzas un widget de error
+          return NoTransitionPage(child: const HomeScreen());
+        }
+        return NoTransitionPage(child: PaymentScreen(userId: userId));
+      },
     ),
     GoRoute(
       path: '/confirm',
       name: 'confirmTransfer',
-      builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>;
-        return ConfirmTransferScreen(
-          methodName: extra['methodName'],
-          svgAsset: extra['svg'],
-          account: extra['account'],
-          rate: extra['rate'],
-          fee: extra['fee'],
-          minAmount: extra['minAmount'],
-          amountUsd: extra['amountUsd'],
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final userId = extra?['userId'] as String?;
+        final methodName = extra?['methodName'] as String?;
+        final svg = extra?['svg'] as String?;
+        final account = extra?['account'] as String?;
+        final rate = extra?['rate'] as double?;
+        final fee = extra?['fee'] as double?;
+        final minAmount = extra?['minAmount'] as double?;
+        final amountUsd = extra?['amountUsd'] as double?;
+        // si falta alguno, vuelvo al home
+        if ([
+          userId,
+          methodName,
+          svg,
+          account,
+          rate,
+          fee,
+          minAmount,
+          amountUsd,
+        ].any((v) => v == null)) {
+          return NoTransitionPage(child: const HomeScreen());
+        }
+        return NoTransitionPage(
+          child: ConfirmTransferScreen(
+            userId: userId!,
+            methodName: methodName!,
+            svgAsset: svg!,
+            account: account!,
+            rate: rate!,
+            fee: fee!,
+            minAmount: minAmount!,
+            amountUsd: amountUsd!,
+          ),
+        );
+      },
+    ),
+
+    /// Rutas para los estados finales de la transacción:
+    GoRoute(
+      path: '/transaction_complete',
+      name: 'transactionComplete',
+      pageBuilder: (context, state) {
+        // aquí podrías recibir también un extra si necesitas algo
+        return NoTransitionPage(child: const TransactionCompleteScreen());
+      },
+    ),
+    GoRoute(
+      path: '/transaction_error',
+      name: 'transactionError',
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final status = extra?['status'] as TxStatus?;
+        final userId = extra?['userId'] as String?;
+        if (status == null || userId == null) {
+          // si no vienen, redirige al home
+          return NoTransitionPage(child: const HomeScreen());
+        }
+        return NoTransitionPage(
+          child: ErrorStatusScreen(status: status, userId: userId),
         );
       },
     ),
   ],
 
-  /// Guard global: redirigir a perfil si no hay userId
   redirect: (context, state) async {
     final prefs = await SharedPreferences.getInstance();
     final hasUser = prefs.getString('userId') != null;
     final goingTo = state.matchedLocation;
-    if (!hasUser && !goingTo.startsWith('/app/profile')) {
-      return '/app/profile';
+    if (!hasUser && !goingTo.startsWith('/profile_register')) {
+      return '/profile_register';
     }
-    if (hasUser && goingTo == '/app/profile') {
+    if (hasUser && goingTo == '/profile_register') {
       return '/app/home';
     }
     return null;

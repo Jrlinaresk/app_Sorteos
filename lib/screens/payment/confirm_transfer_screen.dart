@@ -5,15 +5,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sorteos_app/enums/enums.dart';
+import 'package:sorteos_app/models/transferencia/create_transaction.dto.dart';
+import 'package:sorteos_app/providers/providers.dart';
 import 'package:sorteos_app/theme/theme.dart';
 import 'package:uuid/uuid.dart';
 
 class ConfirmTransferScreen extends ConsumerStatefulWidget {
-  final String methodName, svgAsset, account;
+  final String methodName, svgAsset, account, userId;
   final double rate, fee, minAmount, amountUsd;
 
   const ConfirmTransferScreen({
     super.key,
+    required this.userId,
     required this.methodName,
     required this.svgAsset,
     required this.account,
@@ -60,11 +64,34 @@ class _ConfirmTransferScreenState extends ConsumerState<ConfirmTransferScreen> {
       _error = null;
       _sending = true;
     });
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      _sending = false;
-      _completed = true; // marcamos como completado
-    });
+
+    // DTO con todos los campos
+    final dto = CreateTransactionDto(
+      userId: widget.userId,
+      amountUsd: widget.amountUsd,
+      paymentMethod: widget.methodName,
+      account: widget.account,
+      rate: widget.rate,
+      fee: widget.fee,
+      description: 'Depósito vía ${widget.methodName}',
+      confirmationCode: code,
+      typeOperation: TxType.deposit.name,
+    );
+    try {
+      // Aquí obtienes el Future de la creación
+      final tx = await ref.read(createTransactionProvider(dto).future);
+      // si llega aquí, fue exitoso
+      setState(() {
+        _completed = true;
+        _sending = false;
+      });
+    } catch (e) {
+      // si hay error, lo capturas aquí
+      setState(() {
+        _error = e.toString();
+        _sending = false;
+      });
+    }
   }
 
   @override
@@ -226,13 +253,17 @@ class _ConfirmTransferScreenState extends ConsumerState<ConfirmTransferScreen> {
             if (!_completed) ...[
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32.w),
-                child: TextField(
-                  controller: _codeController,
-                  decoration: InputDecoration(
-                    hintText: 'Código de confirmación',
-                    errorText: _error,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.r),
+                child: SizedBox(
+                  width: 196.w,
+                  child: TextField(
+                    textAlign: TextAlign.start,
+                    controller: _codeController,
+                    decoration: InputDecoration(
+                      hintText: 'Código de confirmación',
+                      errorText: _error,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
                     ),
                   ),
                 ),
@@ -245,6 +276,16 @@ class _ConfirmTransferScreenState extends ConsumerState<ConfirmTransferScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 32.w),
                 child: ElevatedButton(
                   onPressed: _sending ? null : _submitCode,
+                  style: ElevatedButton.styleFrom(
+                    // Text & icon color
+                    foregroundColor: MaterialTheme.greenColor,
+                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                    backgroundColor: MaterialTheme.whiteColor,
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   child:
                       _sending
                           ? SizedBox(
@@ -256,12 +297,6 @@ class _ConfirmTransferScreenState extends ConsumerState<ConfirmTransferScreen> {
                             ),
                           )
                           : Text('Confirmar código'),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 48.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24.r),
-                    ),
-                  ),
                 ),
               ),
             ],
@@ -276,10 +311,10 @@ class _ConfirmTransferScreenState extends ConsumerState<ConfirmTransferScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32.w),
                 child: ElevatedButton.icon(
-                  onPressed: () => Navigator.of(context).pop(_operationId),
+                  onPressed: () => context.goNamed('home'),
                   icon: Icon(Icons.check_circle, color: Colors.green),
                   label: Text(
-                    'Completed',
+                    'Finalizado',
                     style: TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.bold,

@@ -5,11 +5,11 @@ import '../theme/theme.dart';
 /// A reusable, customizable TabBar widget
 class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomTabBar({
-    Key? key,
+    super.key,
     required this.controller,
     required this.tabs,
     this.onTap,
-  }) : super(key: key);
+  });
 
   /// Controller to manage tab selection
   final TabController controller;

@@ -30,7 +30,12 @@ extension RaffleStatusExtension on String {
         return const Color(0xFFFFE5E5); // rojo pastel muy claro 0xFFFFE5E5
       case 'open':
       default:
-        return const Color(0xFFDFF7DF); // amarillo pastel muy claro 0xFFFFF8E1
+        return const Color.fromARGB(
+          255,
+          255,
+          255,
+          255,
+        ); // verde pastel muy claro 0xFFDFF7DF
     }
   }
 
