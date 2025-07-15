@@ -276,6 +276,16 @@ class _ConfirmTransferScreenState extends ConsumerState<ConfirmTransferScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 32.w),
                 child: ElevatedButton(
                   onPressed: _sending ? null : _submitCode,
+                  style: ElevatedButton.styleFrom(
+                    // Text & icon color
+                    foregroundColor: MaterialTheme.greenColor,
+                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                    backgroundColor: MaterialTheme.whiteColor,
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   child:
                       _sending
                           ? SizedBox(
@@ -287,16 +297,6 @@ class _ConfirmTransferScreenState extends ConsumerState<ConfirmTransferScreen> {
                             ),
                           )
                           : Text('Confirmar código'),
-                  style: ElevatedButton.styleFrom(
-                    // Text & icon color
-                    foregroundColor: MaterialTheme.greenColor,
-                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                    backgroundColor: MaterialTheme.whiteColor,
-                    textStyle: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ),
               ),
             ],

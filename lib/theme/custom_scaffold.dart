@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sorteos_app/theme/theme.dart';
 
-class BackgroundLayer extends StatelessWidget {
-  const BackgroundLayer({
+class CustomScaffold extends StatelessWidget {
+  const CustomScaffold({
     super.key,
     this.drawer,
     this.bottomNavigationBar,
@@ -14,12 +14,8 @@ class BackgroundLayer extends StatelessWidget {
     this.extendBodyBehindAppBar = false,
   });
 
-  /// Nuevo: cajón de navegación
   final Widget? drawer;
-
-  /// Nuevo: barra inferior de navegación
   final Widget? bottomNavigationBar;
-
   final Widget? child;
   final Widget? floatingActionButton;
   final PreferredSizeWidget? appBar;

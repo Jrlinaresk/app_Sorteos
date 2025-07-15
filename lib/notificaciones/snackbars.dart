@@ -16,7 +16,7 @@ class AppSnackbar {
         background = MaterialTheme.greenColor;
         break;
       case TypeSnackBar.warning:
-        background = MaterialTheme.otherColor;
+        background = MaterialTheme.pinkColor;
         break;
       case TypeSnackBar.error:
         background = MaterialTheme.redColor;

@@ -6,8 +6,7 @@ import 'package:sorteos_app/theme/theme.dart';
 class LoadingScreen extends StatelessWidget {
   final String message;
   final Widget? logo;
-  const LoadingScreen({Key? key, this.message = 'Cargando…', this.logo})
-    : super(key: key);
+  const LoadingScreen({super.key, this.message = 'Cargando…', this.logo});
   static bool _isShowing = false;
 
   /// Muestra la pantalla de carga.

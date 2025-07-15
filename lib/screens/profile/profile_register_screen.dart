@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,14 +8,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_number/mobile_number.dart';
 import 'package:sorteos_app/enums/enums.dart';
 import 'package:sorteos_app/notificaciones/snackbars.dart';
-import 'package:sorteos_app/theme/background_layer.dart';
+import 'package:sorteos_app/theme/custom_scaffold.dart';
 import 'package:sorteos_app/theme/theme.dart';
 import 'package:sorteos_app/validators/validators.dart';
 import 'package:sorteos_app/widgets/custom_text_field.dart';
 import 'package:sorteos_app/widgets/ok_button.dart';
-import '../services/api_service.dart';
-import '../models/user.dart';
-import '../providers/providers.dart';
+import '../../models/user.dart';
+import '../../providers/providers.dart';
 
 class ProfileRegisterScreen extends ConsumerStatefulWidget {
   const ProfileRegisterScreen({super.key});
@@ -140,7 +138,7 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BackgroundLayer(
+    return CustomScaffold(
       // Aquí sustituimos `child:` por un Column principal
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -188,8 +186,9 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
                             child: Text(
                               textAlign: TextAlign.start,
                               _isPermissionGranted
-                                  ? ('+${_phone!.split("+")[1]}' ??
-                                      'Obteniendo…')
+                                  ? (_phone != null
+                                      ? '+${_phone!.split("+")[1]}'
+                                      : 'Obteniendo…')
                                   : 'Permiso denegado',
                               style: TextStyle(
                                 fontSize:
@@ -212,7 +211,7 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: theme.textTheme.bodySmall!.fontSize,
-                        color: MaterialTheme.subtitle.withValues(alpha: .8),
+                        color: MaterialTheme.whiteColor.withValues(alpha: .8),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -237,7 +236,7 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
                       'Es el nombre que verán los demás usuarios cuando participes en las rifas 😊',
                       style: TextStyle(
                         fontSize: theme.textTheme.bodySmall!.fontSize,
-                        color: MaterialTheme.subtitle.withValues(alpha: .8),
+                        color: MaterialTheme.whiteColor.withValues(alpha: .8),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -250,23 +249,21 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
           // 2) Botón siempre abajo
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-            child: Expanded(
-              child: Column(
-                children: [
-                  if (_error != null) ...[
-                    const SizedBox(height: 16),
-                    Text(_error!, style: const TextStyle(color: Colors.white)),
-                  ],
-                  SizedBox(height: 16),
-                  OkButton(
-                    onPressed: () {
-                      _loading ? null : _submit();
-                    },
-                    title: 'Continuar',
-                    isLoading: _loading,
-                  ),
+            child: Column(
+              children: [
+                if (_error != null) ...[
+                  const SizedBox(height: 16),
+                  Text(_error!, style: const TextStyle(color: Colors.white)),
                 ],
-              ),
+                SizedBox(height: 16),
+                OkButton(
+                  onPressed: () {
+                    _loading ? null : _submit();
+                  },
+                  title: 'Continuar',
+                  isLoading: _loading,
+                ),
+              ],
             ),
           ),
         ],

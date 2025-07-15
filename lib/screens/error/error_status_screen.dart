@@ -6,17 +6,17 @@ import 'package:sorteos_app/enums/enums.dart';
 import 'package:sorteos_app/theme/theme.dart';
 
 class ErrorStatusScreen extends StatelessWidget {
-  final TransactionStatus status;
+  final TxStatus status;
   final String userId;
   const ErrorStatusScreen({
-    Key? key,
+    super.key,
     required this.status,
     required this.userId,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isInsuf = status == TransactionStatus.insufficientFunds;
+    final isInsuf = status == TxStatus.insufficientFunds;
     final icon = isInsuf ? Icons.error_outline : Icons.warning;
     final title = isInsuf ? 'Saldo insuficiente' : 'Algo salió mal';
     final message =

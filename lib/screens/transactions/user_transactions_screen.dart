@@ -20,7 +20,7 @@ final userTransactionsProvider = FutureProvider<List<TransactionModel>>((
 });
 
 class UserTransactionsScreen extends ConsumerWidget {
-  const UserTransactionsScreen({Key? key}) : super(key: key);
+  const UserTransactionsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -140,7 +140,7 @@ class CustomTextFieldState extends State<CustomTextField> {
                           padding: const EdgeInsets.only(right: 16),
                           icon: Icon(
                             widget.obscureToggleIcon,
-                            color: MaterialTheme.otherColor2.withValues(
+                            color: MaterialTheme.oranchColor.withValues(
                               alpha: .8,
                             ),
                           ),

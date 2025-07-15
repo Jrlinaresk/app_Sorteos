@@ -7,8 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sorteos_app/theme/theme.dart';
 
 class RaffleCard extends StatelessWidget {
-  const RaffleCard({Key? key, required this.raffle, required this.onTap})
-    : super(key: key);
+  const RaffleCard({super.key, required this.raffle, required this.onTap});
 
   final Raffle raffle;
   final VoidCallback onTap;
@@ -249,8 +248,7 @@ class CountdownTimer extends StatelessWidget {
   final DateTime target;
   final TextStyle? style;
 
-  const CountdownTimer({Key? key, required this.target, this.style})
-    : super(key: key);
+  const CountdownTimer({super.key, required this.target, this.style});
 
   @override
   Widget build(BuildContext context) {

@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// Devuelve `true` si el usuario confirma la salida (o pulsa atrás otra vez),
 /// `false` si cancela.
 class ExitConfirmationScreen extends StatelessWidget {
-  const ExitConfirmationScreen({Key? key}) : super(key: key);
+  const ExitConfirmationScreen({super.key});
 
   /// Lanza el fullscreen y retorna Future<bool> indicando si el usuario
   /// confirmó salir.

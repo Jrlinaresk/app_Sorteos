@@ -4,9 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sorteos_app/providers/providers.dart';
-import 'package:sorteos_app/screens/exit_confirmation_screen.dart';
-import 'package:sorteos_app/screens/loading_screen.dart';
-import 'package:sorteos_app/theme/background_layer.dart';
+import 'package:sorteos_app/screens/utility/exit_confirmation_screen.dart';
+import 'package:sorteos_app/screens/utility/loading_screen.dart';
+import 'package:sorteos_app/theme/custom_scaffold.dart';
 import 'package:sorteos_app/theme/theme.dart';
 import 'package:sorteos_app/widgets/drawer/app_drawer.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
@@ -82,7 +82,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
     return WillPopScope(
       onWillPop: _onWillPop,
-      child: BackgroundLayer(
+      child: CustomScaffold(
         key: _scaffoldKey,
         appBar: AppBar(
           iconTheme: IconThemeData(color: MaterialTheme.whiteColor),
@@ -140,9 +140,6 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
             _userId != null
                 ? AppDrawer(scaffoldKey: _scaffoldKey, userId: _userId!)
                 : null,
-
-        /// Aquí va el contenido de cada ruta anidada
-        child: widget.child,
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.all(16.0),
           child: StylishBottomBar(
@@ -195,6 +192,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
             },
           ),
         ),
+
+        /// Aquí va el contenido de cada ruta anidada
+        child: widget.child,
       ),
     );
   }

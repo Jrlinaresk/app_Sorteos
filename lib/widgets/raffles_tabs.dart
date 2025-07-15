@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sorteos_app/screens/loading_screen.dart';
+import 'package:sorteos_app/screens/utility/loading_screen.dart';
 import 'package:sorteos_app/widgets/raffle_card.dart';
 
 import '../models/raffle.dart';
@@ -57,7 +57,7 @@ class _RafflesTabsState extends ConsumerState<RafflesTabs> {
   Widget build(BuildContext context) {
     final rafflesAsync = ref.watch(rafflesProvider);
 
-    List<Raffle> _filter(String status, bool excludeParticipation) {
+    List<Raffle> filter(String status, bool excludeParticipation) {
       final all = rafflesAsync.asData?.value ?? [];
       return all.where((r) {
         final isOpen = r.status == 'open';
@@ -72,9 +72,9 @@ class _RafflesTabsState extends ConsumerState<RafflesTabs> {
       }).toList();
     }
 
-    final open = _filter('open', true);
-    final closed = _filter('closed', false);
-    final mine = _filter('', false);
+    final open = filter('open', true);
+    final closed = filter('closed', false);
+    final mine = filter('', false);
 
     // Después de construir, avisamos de la nueva visibilidad
     WidgetsBinding.instance.addPostFrameCallback((_) {

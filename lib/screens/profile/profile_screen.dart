@@ -105,7 +105,6 @@ class _ProfileContent extends StatelessWidget {
                           context,
                         ).showSnackBar(SnackBar(content: Text('Proximamente')));
                       },
-                      child: Text('Update'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: MaterialTheme.whiteColor,
                         side: const BorderSide(color: Colors.white),
@@ -113,6 +112,7 @@ class _ProfileContent extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
+                      child: Text('Update'),
                     ),
                   ],
                 ),

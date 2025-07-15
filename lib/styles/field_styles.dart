@@ -11,7 +11,7 @@ class FieldStyles {
     bool editable = true,
     TextStyle? errorStyle,
   }) {
-    final focusedBorderColor = MaterialTheme.otherColor2.withValues(alpha: .6);
+    final focusedBorderColor = MaterialTheme.oranchColor.withValues(alpha: .6);
 
     return InputDecoration(
       alignLabelWithHint: false,
@@ -19,12 +19,12 @@ class FieldStyles {
       hintStyle: TextStyle(color: MaterialTheme.whiteColor, fontSize: 22.h),
       filled: true,
       fillColor:
-          editable ? MaterialTheme.otherColor2 : MaterialTheme.whiteColor,
+          editable ? MaterialTheme.oranchColor : MaterialTheme.whiteColor,
       errorStyle:
           errorStyle ??
           TextStyle(
             fontSize: 12,
-            color: MaterialTheme.otherColor,
+            color: MaterialTheme.pinkColor,
             fontWeight: FontWeight.w500,
           ),
       prefixIcon: prefixIcon,
@@ -67,16 +67,15 @@ class FieldStyles {
     bool enabled = true,
     TextStyle? errorStyle,
   }) {
-    final focusedBorderColor = MaterialTheme.otherColor2;
+    final focusedBorderColor = MaterialTheme.oranchColor;
 
     return InputDecoration(
       labelText: label,
-      labelStyle: TextStyle(color: MaterialTheme.otherColor),
+      labelStyle: TextStyle(color: MaterialTheme.pinkColor),
       filled: true,
-      fillColor: enabled ? MaterialTheme.otherColor2 : MaterialTheme.whiteColor,
+      fillColor: enabled ? MaterialTheme.oranchColor : MaterialTheme.whiteColor,
       errorStyle:
-          errorStyle ??
-          TextStyle(fontSize: 12, color: MaterialTheme.otherColor),
+          errorStyle ?? TextStyle(fontSize: 12, color: MaterialTheme.pinkColor),
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
@@ -86,7 +85,7 @@ class FieldStyles {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: MaterialTheme.otherColor, width: 0.5),
+        borderSide: BorderSide(color: MaterialTheme.pinkColor, width: 0.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -94,11 +93,11 @@ class FieldStyles {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: MaterialTheme.otherColor, width: 1.5),
+        borderSide: BorderSide(color: MaterialTheme.pinkColor, width: 1.5),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: MaterialTheme.otherColor, width: 2),
+        borderSide: BorderSide(color: MaterialTheme.pinkColor, width: 2),
       ),
     );
   }

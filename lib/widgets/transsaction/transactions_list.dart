@@ -5,8 +5,7 @@ import 'package:sorteos_app/widgets/transsaction/transaction_item.dart';
 class TransactionsList extends StatelessWidget {
   final List<TransactionModel> transactions;
 
-  const TransactionsList({Key? key, required this.transactions})
-    : super(key: key);
+  const TransactionsList({super.key, required this.transactions});
 
   @override
   Widget build(BuildContext context) {

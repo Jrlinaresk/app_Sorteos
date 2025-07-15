@@ -19,8 +19,7 @@ class AppDrawer extends ConsumerWidget {
   final String userId;
   final dynamic scaffoldKey;
 
-  const AppDrawer({Key? key, required this.userId, required this.scaffoldKey})
-    : super(key: key);
+  const AppDrawer({super.key, required this.userId, required this.scaffoldKey});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -84,7 +83,7 @@ class AppDrawer extends ConsumerWidget {
                   //   scaffoldKey: scaffoldKey,
                   // ),
                   // Divider(
-                  //   color: MaterialTheme.otherColor2.withValues(alpha: .2),
+                  //   color: MaterialTheme.oranchColor.withValues(alpha: .2),
                   //   height: .3,
                   //   thickness: kBorderWidth,
                   // ),
@@ -95,7 +94,7 @@ class AppDrawer extends ConsumerWidget {
                   //   scaffoldKey: scaffoldKey,
                   // ),
                   // Divider(
-                  //   color: MaterialTheme.otherColor2.withValues(alpha: .2),
+                  //   color: MaterialTheme.oranchColor.withValues(alpha: .2),
                   //   height: .3,
                   //   thickness: kBorderWidth,
                   // ),
@@ -106,7 +105,7 @@ class AppDrawer extends ConsumerWidget {
                   //   scaffoldKey: scaffoldKey,
                   // ),
                   // Divider(
-                  //   color: MaterialTheme.otherColor2.withValues(alpha: .2),
+                  //   color: MaterialTheme.oranchColor.withValues(alpha: .2),
                   //   height: .3,
                   //   thickness: kBorderWidth,
                   // ),

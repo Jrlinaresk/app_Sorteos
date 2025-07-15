@@ -11,7 +11,7 @@ import '../../widgets/payment_method_card.dart';
 
 class PaymentScreen extends ConsumerStatefulWidget {
   final String userId;
-  const PaymentScreen({Key? key, required this.userId}) : super(key: key);
+  const PaymentScreen({super.key, required this.userId});
 
   @override
   ConsumerState<PaymentScreen> createState() => _PaymentScreenState();
@@ -24,10 +24,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   double? _selectedFee;
   double _selectedMin = 1.0;
   String _selecedMethodName = 'Bank CUP';
-  bool _sending = false;
+  final bool _sending = false;
   String? _amountError;
   String? _selectedSvg;
-  String _selectedMethodName = '';
+  final String _selectedMethodName = '';
 
   @override
   void initState() {
@@ -177,7 +177,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               onChanged: (text) {
                 final sanitized = text.replaceAll(',', '.');
                 final value = double.tryParse(sanitized);
-                String? err = null;
+                String? err;
 
                 // validación de formato / longitud
                 err = CoreValidators.validateAmount(text);

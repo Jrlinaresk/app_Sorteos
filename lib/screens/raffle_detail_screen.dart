@@ -65,7 +65,6 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
             "Ya tienes ${cnt + 1} tickets",
             TypeSnackBar.success,
           );
-      ;
     } on Exception catch (e) {
       final msg = e.toString().toLowerCase();
 
@@ -73,16 +72,13 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
       if (msg.contains('saldo insuficiente')) {
         context.pushNamed(
           'transactionError',
-          extra: {
-            'status': TransactionStatus.insufficientFunds,
-            'userId': _userId!,
-          },
+          extra: {'status': TxStatus.insufficientFunds, 'userId': _userId!},
         );
       } else {
         // Otro error de servidor
         context.goNamed(
           'transactionError',
-          extra: {'status': TransactionStatus.serverError, 'userId': _userId!},
+          extra: {'status': TxStatus.serverError, 'userId': _userId!},
         );
       }
     } finally {
@@ -354,7 +350,7 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
                                       children: [
                                         GestureDetector(
                                           onTap: () {
-                                            r.participants.length > 0
+                                            r.participants.isNotEmpty
                                                 ? _showParticipants(
                                                   r.participants,
                                                 )
@@ -490,12 +486,12 @@ class CountdownDisplay extends StatefulWidget {
   /// Color del texto de las etiquetas
   final Color labelColor;
   const CountdownDisplay({
-    Key? key,
+    super.key,
     required this.target,
     this.panelColor = const Color(0x22000000),
     this.digitColor = Colors.white,
     this.labelColor = Colors.white70,
-  }) : super(key: key);
+  });
 
   @override
   _CountdownDisplayState createState() => _CountdownDisplayState();
@@ -537,7 +533,7 @@ class _CountdownDisplayState extends State<CountdownDisplay> {
     final minutes = _diff.inMinutes % 60;
     final seconds = _diff.inSeconds % 60;
 
-    Widget _buildPanel(String value, String label) {
+    Widget buildPanel(String value, String label) {
       return Expanded(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -575,10 +571,10 @@ class _CountdownDisplayState extends State<CountdownDisplay> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildPanel(days.toString(), 'Days'),
-        _buildPanel(hours.toString(), 'Hours'),
-        _buildPanel(minutes.toString(), 'Minutes'),
-        _buildPanel(seconds.toString(), 'Seconds'),
+        buildPanel(days.toString(), 'Days'),
+        buildPanel(hours.toString(), 'Hours'),
+        buildPanel(minutes.toString(), 'Minutes'),
+        buildPanel(seconds.toString(), 'Seconds'),
       ],
     );
   }

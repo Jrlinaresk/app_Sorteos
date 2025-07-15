@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class PaymentMethodCard extends StatelessWidget {
   const PaymentMethodCard({
-    Key? key,
+    super.key,
     required this.methodName,
     required this.svgAsset,
     required this.accountNumber,
@@ -12,7 +12,7 @@ class PaymentMethodCard extends StatelessWidget {
     required this.feePercent,
     required this.onTap,
     this.isSelected = false,
-  }) : super(key: key);
+  });
 
   /// Nombre legible del método (p.ej. “Zelle”, “PayPal”…)
   final String methodName;

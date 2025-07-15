@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sorteos_app/theme/theme.dart';
 
 class TransactionCompleteScreen extends StatelessWidget {
-  const TransactionCompleteScreen({Key? key}) : super(key: key);
+  const TransactionCompleteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

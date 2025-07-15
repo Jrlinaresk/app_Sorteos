@@ -5,7 +5,7 @@ import 'package:sorteos_app/models/transferencia/transaction.dart';
 class TransactionItem extends StatelessWidget {
   final TransactionModel tx;
 
-  const TransactionItem({Key? key, required this.tx}) : super(key: key);
+  const TransactionItem({super.key, required this.tx});
 
   @override
   Widget build(BuildContext context) {

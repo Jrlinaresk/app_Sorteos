@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sorteos_app/enums/enums.dart';
@@ -11,7 +9,7 @@ import 'package:sorteos_app/screens/payment/confirm_transfer_screen.dart';
 import 'package:sorteos_app/screens/payment/payment_screen.dart';
 import 'package:sorteos_app/screens/transactions/transaction_complete_screen.dart';
 import 'package:sorteos_app/screens/profile/profile_screen.dart';
-import 'package:sorteos_app/screens/profile_register_screen.dart';
+import 'package:sorteos_app/screens/profile/profile_register_screen.dart';
 import 'package:sorteos_app/screens/raffle_detail_screen.dart';
 import 'package:sorteos_app/screens/shop_screen.dart';
 import 'package:sorteos_app/screens/transactions/user_transactions_screen.dart';
@@ -148,7 +146,7 @@ final router = GoRouter(
       name: 'transactionError',
       pageBuilder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
-        final status = extra?['status'] as TransactionStatus?;
+        final status = extra?['status'] as TxStatus?;
         final userId = extra?['userId'] as String?;
         if (status == null || userId == null) {
           // si no vienen, redirige al home
