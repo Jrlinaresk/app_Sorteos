@@ -6,7 +6,7 @@ import 'package:sorteos_app/models/user.dart';
 import '../models/category.dart';
 import '../models/raffle.dart';
 
-const baseUrl = 'https://lgp6ch24-8080.use2.devtunnels.ms/api/v1';
+const baseUrl = 'https://sorteoscuba.everom.net/api/v1';
 
 class ApiService {
   Future<User> createUser(String phone, String nickname) async {

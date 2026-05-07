@@ -6,7 +6,6 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sorteos_app/enums/enums.dart';
 import 'package:sorteos_app/notificaciones/snackbars.dart';
@@ -17,7 +16,6 @@ import '../models/raffle.dart';
 import '../models/participant.dart';
 import '../providers/providers.dart';
 import 'dart:async';
-import 'package:flutter/material.dart';
 
 class RaffleDetailScreen extends ConsumerStatefulWidget {
   final String raffleId;
@@ -174,6 +172,8 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
           loading: () => Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(child: Text('Error: $e')),
           data: (r) {
+            var cImage = r.imageUrl!.split(".com/")[1];
+            cImage = "assets/uploads/$cImage";
             final condicion = r.itemCondition;
             final status = r.status;
             final ext = status;
@@ -199,7 +199,7 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // --- BLOQUE 1: IMAGEN + TÍTULO
-                          if (r.imageUrl != '')
+                          if (cImage != '')
                             SizedBox(
                               width: 56.w,
                               height: 300.h,
@@ -210,7 +210,7 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
                                     // 1) Imagen de fondo a cubrir todo el espacio
                                     Positioned.fill(
                                       child:
-                                          r.imageUrl != ''
+                                          cImage != ''
                                               ? CachedNetworkImage(
                                                 cacheManager: CacheManager(
                                                   Config(
@@ -221,7 +221,7 @@ class _RaffleDetailScreenState extends ConsumerState<RaffleDetailScreen> {
                                                     maxNrOfCacheObjects: 100,
                                                   ),
                                                 ),
-                                                imageUrl: r.imageUrl!,
+                                                imageUrl: cImage,
                                                 fit: BoxFit.cover,
                                                 placeholder:
                                                     (context, url) => Container(

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sorteos_app/constants/constants.dart';
-import 'package:sorteos_app/models/user.dart';
-import 'package:sorteos_app/providers/providers.dart';
 import 'package:sorteos_app/screens/profile/profile_screen.dart';
 import 'package:sorteos_app/services/api_service.dart';
 import 'package:sorteos_app/theme/theme.dart';
@@ -66,7 +63,7 @@ class AppDrawer extends ConsumerWidget {
 
                   // Navigation items
                   _DrawerItem(
-                    icon: TablerIcons.home,
+                    icon: Icons.home,
                     label: 'Inicio',
                     routeName: 'home',
                     scaffoldKey: scaffoldKey,
@@ -110,7 +107,7 @@ class AppDrawer extends ConsumerWidget {
                   //   thickness: kBorderWidth,
                   // ),
                   _DrawerItem(
-                    icon: TablerIcons.credit_card,
+                    icon: Icons.credit_card,
                     label: 'Trassaciones',
                     routeName: 'userTransactions',
                     scaffoldKey: scaffoldKey,

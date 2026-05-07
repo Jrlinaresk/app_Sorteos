@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sorteos_app/theme/theme.dart';
 
 class OkButton extends StatelessWidget {

@@ -1,6 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:sorteos_app/extensions/raffle_status_extension.dart';
 import '../models/raffle.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,6 +14,8 @@ class RaffleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Color de status: verde si closed, naranja si open, gris si cancelled
     final status = raffle.status; // 'open' | 'closed' | 'cancelled'
+    var cImage = raffle.imageUrl!.split(".com/")[1];
+    cImage = resolveImagePath(cImage);
 
     return Card(
       color:
@@ -46,37 +46,38 @@ class RaffleCard extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child:
-                      raffle.imageUrl != null
-                          ? CachedNetworkImage(
-                            cacheManager: CacheManager(
-                              Config(
-                                'customCacheKey',
-                                stalePeriod: const Duration(days: 31),
-                                maxNrOfCacheObjects: 100,
-                              ),
-                            ),
-                            imageUrl: raffle.imageUrl!,
-                            fit: BoxFit.cover,
-                            placeholder:
-                                (context, url) => Container(
-                                  color: MaterialTheme.whiteColor,
-                                  child: Center(
-                                    child: Image.asset(
-                                      'assets/images/placeholder.png',
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                            errorWidget:
-                                (context, url, error) => Container(
-                                  color: Colors.grey.shade200,
-                                  child: Icon(
-                                    Icons.broken_image,
-                                    color: Colors.grey,
-                                    size: 32.w,
-                                  ),
-                                ),
-                          )
+                      cImage.isNotEmpty
+                          ? Image.asset(cImage, fit: BoxFit.cover)
+                          // CachedNetworkImage(
+                          //   cacheManager: CacheManager(
+                          //     Config(
+                          //       'customCacheKey',
+                          //       stalePeriod: const Duration(days: 31),
+                          //       maxNrOfCacheObjects: 100,
+                          //     ),
+                          //   ),
+                          //   imageUrl: cImage,
+                          //   fit: BoxFit.cover,
+                          //   placeholder:
+                          //       (context, url) => Container(
+                          //         color: MaterialTheme.whiteColor,
+                          //         child: Center(
+                          //           child: Image.asset(
+                          //             'assets/images/placeholder.png',
+                          //             fit: BoxFit.cover,
+                          //           ),
+                          //         ),
+                          //       ),
+                          //   errorWidget:
+                          //       (context, url, error) => Container(
+                          //         color: Colors.grey.shade200,
+                          //         child: Icon(
+                          //           Icons.broken_image,
+                          //           color: Colors.grey,
+                          //           size: 32.w,
+                          //         ),
+                          //       ),
+                          // )
                           : Container(
                             color: Colors.grey.shade200,
                             child: Icon(
@@ -235,6 +236,14 @@ class RaffleCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String resolveImagePath(String cImage) {
+    if (cImage.toLowerCase().endsWith('.svg')) {
+      return "assets/svg/$cImage";
+    } else {
+      return "assets/uploads/$cImage";
+    }
   }
 }
 

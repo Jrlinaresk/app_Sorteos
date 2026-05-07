@@ -96,7 +96,7 @@ class _RafflesTabsState extends ConsumerState<RafflesTabs> {
       data:
           (_) => Theme(
             data: Theme.of(context).copyWith(
-              tabBarTheme: const TabBarTheme(
+              tabBarTheme: const TabBarThemeData(
                 indicator: UnderlineTabIndicator(
                   borderSide: BorderSide(color: Colors.white, width: 2),
                 ),
