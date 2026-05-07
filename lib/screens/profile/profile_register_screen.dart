@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_number/mobile_number.dart';
 import 'package:sorteos_app/enums/enums.dart';
@@ -26,6 +27,8 @@ class ProfileRegisterScreen extends ConsumerStatefulWidget {
 class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
   String? _phone;
   bool _isPermissionGranted = false;
+  bool _isFetchingPhone = false;
+  final _phoneController = TextEditingController();
   final _nickController = TextEditingController();
   bool _loading = false;
   String? _error;
@@ -33,28 +36,103 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
   @override
   void initState() {
     super.initState();
-    MobileNumber.listenPhonePermission((granted) {
-      setState(() => _isPermissionGranted = granted);
-      if (granted) initMobileNumberState();
+    _initPhoneFlow();
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _nickController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initPhoneFlow() async {
+    setState(() {
+      _isFetchingPhone = true;
+      _error = null;
     });
-    initMobileNumberState();
+
+    var status = await Permission.phone.status;
+    if (!status.isGranted) {
+      status = await Permission.phone.request();
+    }
+
+    if (!mounted) return;
+
+    if (!status.isGranted) {
+      setState(() {
+        _isPermissionGranted = false;
+        _isFetchingPhone = false;
+        _error =
+            status.isPermanentlyDenied
+                ? 'Permiso de teléfono denegado permanentemente. Actívalo en Ajustes.'
+                : 'No se concedió el permiso de teléfono.';
+      });
+      return;
+    }
+
+    setState(() => _isPermissionGranted = true);
+    await initMobileNumberState();
+  }
+
+  String? _normalizePhone(String? rawValue) {
+    if (rawValue == null) return null;
+    final trimmed = rawValue.trim();
+    if (trimmed.isEmpty) return null;
+
+    final digitsOnly = trimmed.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digitsOnly.length < 7) return null;
+
+    return '+$digitsOnly';
   }
 
   Future<void> initMobileNumberState() async {
-    if (!await MobileNumber.hasPhonePermission) {
-      await MobileNumber.requestPhonePermission;
-      return;
-    }
-    setState(() => _isPermissionGranted = true);
+    setState(() => _isFetchingPhone = true);
+
     try {
-      final num = await MobileNumber.mobileNumber;
-      final sims = await MobileNumber.getSimCards;
+      final numFuture = MobileNumber.mobileNumber;
+      final simsFuture = MobileNumber.getSimCards;
+
+      final num =
+          numFuture == null
+              ? null
+              : await numFuture.timeout(
+                const Duration(seconds: 8),
+                onTimeout: () => '',
+              );
+      final sims =
+          simsFuture == null
+              ? <SimCard>[]
+              : await simsFuture.timeout(
+                const Duration(seconds: 8),
+                onTimeout: () => <SimCard>[],
+              );
+
+      String? detected = _normalizePhone(num);
+      if (detected == null && sims.isNotEmpty) {
+        detected = _normalizePhone(sims.first.number);
+      }
+
+      if (!mounted) return;
       setState(() {
-        _phone = num ?? sims?.first.number;
+        _phone = detected;
+        _isFetchingPhone = false;
+
+        if (detected != null) {
+          _phoneController.text = detected;
+        } else {
+          _error ??=
+              'No pudimos detectar tu número automáticamente. Escríbelo manualmente para continuar.';
+        }
       });
     } catch (e) {
       debugPrint("Error obteniendo número: $e");
-      setState(() => _error = 'No se pudo obtener tu número');
+      if (!mounted) return;
+      setState(() {
+        _isFetchingPhone = false;
+        _error =
+            'No se pudo obtener tu número automáticamente. Escríbelo manualmente para continuar.';
+      });
     }
   }
 
@@ -62,10 +140,12 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
     setState(() {
       _error = null;
     });
-    if (_phone == null) {
-      setState(() => _error = 'Por favor, concede permiso o reinicia la app');
+    final normalizedPhone = _normalizePhone(_phone ?? _phoneController.text);
+    if (normalizedPhone == null) {
+      setState(() => _error = 'Ingresa un número de teléfono válido');
       return;
     }
+
     final nick = _nickController.text.trim();
     if (nick.isEmpty) {
       setState(() => _error = 'El nickname no puede estar vacío');
@@ -75,7 +155,7 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
     setState(() => _loading = true);
     try {
       final api = ref.read(apiServiceProvider);
-      final User user = await api.createUser('+${_phone!.split("+")[1]}', nick);
+      final User user = await api.createUser(normalizedPhone, nick);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('userId', user.id);
@@ -111,7 +191,7 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
 
       try {
         final api = ref.read(apiServiceProvider);
-        final user = await api.login('+${_phone!.split("+")[1]}', nick);
+        final user = await api.login(normalizedPhone, nick);
         // guardas user.id en prefs y navegas:
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('userId', user.id);
@@ -185,11 +265,13 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
                           Expanded(
                             child: Text(
                               textAlign: TextAlign.start,
-                              _isPermissionGranted
-                                  ? (_phone != null
-                                      ? '+${_phone!.split("+")[1]}'
-                                      : 'Obteniendo…')
-                                  : 'Permiso denegado',
+                              !_isPermissionGranted
+                                  ? 'Permiso denegado'
+                                  : _phone != null
+                                  ? _phone!
+                                  : _isFetchingPhone
+                                  ? 'Obteniendo...'
+                                  : 'No detectado',
                               style: TextStyle(
                                 fontSize:
                                     theme.textTheme.headlineLarge!.fontSize,
@@ -207,7 +289,7 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Text(
-                      'Tu número de teléfono se ha detectado automáticamente.',
+                      'Intentamos detectar tu número automáticamente. Si no aparece, escríbelo manualmente.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: theme.textTheme.bodySmall!.fontSize,
@@ -215,6 +297,17 @@ class _ProfileRegisterScreenState extends ConsumerState<ProfileRegisterScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    maxCaracter: 16,
+                    label: 'Teléfono',
+                    hint: '+5355512345',
+                    editable: true,
+                    keyboardType: TextInputType.phone,
+                    controller: _phoneController,
+                    suffixIcon: Icons.phone,
+                    validators: [CoreValidators.validatePhone],
                   ),
                   SizedBox(height: 16.0),
                   CustomTextField(

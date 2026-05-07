@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:http/http.dart' as http;
 import 'package:sorteos_app/models/transferencia/create_transaction.dto.dart';
 import 'package:sorteos_app/models/transferencia/transaction.dart';
@@ -6,7 +7,15 @@ import 'package:sorteos_app/models/user.dart';
 import '../models/category.dart';
 import '../models/raffle.dart';
 
-const baseUrl = 'https://sorteoscuba.everom.net/api/v1';
+const _prodApiBaseUrl = 'https://sorteoscuba.everom.net/api/v1';
+const _devApiBaseUrl = 'http://192.168.1.19:8080/api/v1';
+
+/// Permite sobreescribir la API en tiempo de ejecución de Flutter:
+/// flutter run --dart-define=API_BASE_URL=http://ip-local:8080/api/v1
+const baseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: kReleaseMode ? _prodApiBaseUrl : _devApiBaseUrl,
+);
 
 class ApiService {
   Future<User> createUser(String phone, String nickname) async {
