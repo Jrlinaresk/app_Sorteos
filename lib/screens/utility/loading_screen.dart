@@ -18,7 +18,7 @@ class LoadingScreen extends StatelessWidget {
   }) {
     if (_isShowing) return Future.value(false);
     _isShowing = true;
-    return Navigator.of(context)
+    return Navigator.of(context, rootNavigator: true)
         .push<bool>(
           PageRouteBuilder(
             opaque: true,
@@ -37,10 +37,24 @@ class LoadingScreen extends StatelessWidget {
 
   /// Cierra la pantalla de carga *solo si está activa*.
   static void hide(BuildContext context) {
-    if (_isShowing && Navigator.canPop(context)) {
+    if (!_isShowing) return;
+
+    final navigator = Navigator.of(context, rootNavigator: true);
+    if (navigator.canPop()) {
       _isShowing = false;
-      Navigator.of(context).pop(false);
+      navigator.pop(false);
+      return;
     }
+
+    // Si la ruta aún no terminó de insertarse, reintenta una vez.
+    Future.delayed(const Duration(milliseconds: 120), () {
+      if (!_isShowing) return;
+      final nav = Navigator.of(context, rootNavigator: true);
+      if (nav.canPop()) {
+        _isShowing = false;
+        nav.pop(false);
+      }
+    });
   }
 
   @override

@@ -32,7 +32,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
   Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    final id = prefs.getString('userId') ?? prefs.getString('phone');
+    final id = prefs.getString('userId');
     setState(() => _userId = id);
 
     if (_userId != null) {

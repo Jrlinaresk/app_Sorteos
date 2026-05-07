@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:http/http.dart' as http;
@@ -8,7 +9,7 @@ import '../models/category.dart';
 import '../models/raffle.dart';
 
 const _prodApiBaseUrl = 'https://sorteoscuba.everom.net/api/v1';
-const _devApiBaseUrl = 'http://192.168.1.19:8080/api/v1';
+const _devApiBaseUrl = 'http://192.168.1.4:8080/api/v1';
 
 /// Permite sobreescribir la API en tiempo de ejecución de Flutter:
 /// flutter run --dart-define=API_BASE_URL=http://ip-local:8080/api/v1
@@ -18,12 +19,32 @@ const baseUrl = String.fromEnvironment(
 );
 
 class ApiService {
+  static const _requestTimeout = Duration(seconds: 12);
+
+  Future<http.Response> _safeRequest(
+    Future<http.Response> request, {
+    required String endpoint,
+  }) async {
+    try {
+      return await request.timeout(_requestTimeout);
+    } on TimeoutException {
+      throw Exception(
+        'Tiempo de espera agotado al conectar con el servidor: $endpoint',
+      );
+    } on http.ClientException catch (e) {
+      throw Exception('Error de conexión con el servidor: ${e.message}');
+    }
+  }
+
   Future<User> createUser(String phone, String nickname) async {
     final uri = Uri.parse('$baseUrl/users');
-    final resp = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'phone': phone, 'nickname': nickname}),
+    final resp = await _safeRequest(
+      http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'phone': phone, 'nickname': nickname}),
+      ),
+      endpoint: '/users',
     );
     if (resp.statusCode == 201) {
       return User.fromJson(json.decode(resp.body) as Map<String, dynamic>);
@@ -39,7 +60,10 @@ class ApiService {
   }
 
   Future<List<Category>> fetchCategories() async {
-    final resp = await http.get(Uri.parse('$baseUrl/categories'));
+    final resp = await _safeRequest(
+      http.get(Uri.parse('$baseUrl/categories')),
+      endpoint: '/categories',
+    );
     if (resp.statusCode == 200) {
       final List data = json.decode(resp.body) as List;
       return data
@@ -57,7 +81,7 @@ class ApiService {
         categoryId != null
             ? Uri.parse('$baseUrl/raffles?category=$categoryId')
             : Uri.parse('$baseUrl/raffles');
-    final resp = await http.get(uri);
+    final resp = await _safeRequest(http.get(uri), endpoint: '/raffles');
     if (resp.statusCode == 200) {
       final List data = json.decode(resp.body) as List;
       return data
@@ -71,7 +95,10 @@ class ApiService {
   }
 
   Future<Raffle> fetchRaffle(String id) async {
-    final resp = await http.get(Uri.parse('$baseUrl/raffles/$id'));
+    final resp = await _safeRequest(
+      http.get(Uri.parse('$baseUrl/raffles/$id')),
+      endpoint: '/raffles/$id',
+    );
     if (resp.statusCode == 200) {
       return Raffle.fromJson(json.decode(resp.body) as Map<String, dynamic>);
     }
@@ -79,10 +106,13 @@ class ApiService {
   }
 
   Future<void> participate(String raffleId, String userId) async {
-    final resp = await http.post(
-      Uri.parse('$baseUrl/users/$userId/participations'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'raffleId': raffleId}),
+    final resp = await _safeRequest(
+      http.post(
+        Uri.parse('$baseUrl/users/$userId/participations'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'raffleId': raffleId}),
+      ),
+      endpoint: '/users/$userId/participations',
     );
     if (resp.statusCode != 201) {
       final Map<String, dynamic> map = json.decode(resp.body);
@@ -93,7 +123,10 @@ class ApiService {
   }
 
   Future<User> fetchUser(String id) async {
-    final resp = await http.get(Uri.parse('$baseUrl/users/$id'));
+    final resp = await _safeRequest(
+      http.get(Uri.parse('$baseUrl/users/$id')),
+      endpoint: '/users/$id',
+    );
     if (resp.statusCode == 200) {
       return User.fromJson(json.decode(resp.body) as Map<String, dynamic>);
     }
@@ -105,7 +138,10 @@ class ApiService {
 
   Future<List<TransactionModel>> fetchUserTransactions(String userId) async {
     final uri = Uri.parse('$baseUrl/transactions/user/$userId');
-    final resp = await http.get(uri);
+    final resp = await _safeRequest(
+      http.get(uri),
+      endpoint: '/transactions/user/$userId',
+    );
     if (resp.statusCode == 200) {
       final List data = json.decode(resp.body) as List;
       return data.map((e) => TransactionModel.fromJson(e)).toList();
@@ -118,10 +154,13 @@ class ApiService {
 
   Future<TransactionModel> createTransaction(CreateTransactionDto dto) async {
     final uri = Uri.parse('$baseUrl/transactions');
-    final resp = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(dto.toJson()),
+    final resp = await _safeRequest(
+      http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(dto.toJson()),
+      ),
+      endpoint: '/transactions',
     );
     if (resp.statusCode == 201) {
       return TransactionModel.fromJson(json.decode(resp.body));
@@ -133,10 +172,13 @@ class ApiService {
 
   Future<User> login(String phone, String nickname) async {
     final uri = Uri.parse('$baseUrl/users/login');
-    final resp = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'phone': phone.trim(), 'nickname': nickname.trim()}),
+    final resp = await _safeRequest(
+      http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'phone': phone.trim(), 'nickname': nickname.trim()}),
+      ),
+      endpoint: '/users/login',
     );
 
     if (resp.statusCode == 201) {
